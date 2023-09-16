@@ -4,17 +4,18 @@ import time
 import socket
 import threading
 from satorilib import logging
-from satorilib.api.udp.rendezvous.protocol import UDPRendezvousMessage, UDPRendezvousProtocol
+from satorirendezvous.server.structs.message import ToServerMessage
+from satorirendezvous.server.structs.protocol import ToServerProtocol
 
 
-class UDPRendezvousConnectionBase:
+class RendezvousConnectionBase:
     ''' raw connection functionality '''
 
     def __init__(self, messageCallback=None):
         # could allow us to keep track of which messages were responded to
         self.msgId = 0
         self.sock = None
-        self.rendezvousServer = ('161.35.238.159', 49152)
+        self.rendezvousServer = ('161.35.238.159', 49152)  # TODO: parameterize
         self.rendezvousPort = 49152
         self.messageCallback = messageCallback or self.display
         self.port = None
@@ -39,8 +40,6 @@ class UDPRendezvousConnectionBase:
             '''
             while True:
                 data, addr = self.sock.recvfrom(1024)
-                print('RECEIVED DATA')
-                print(data, addr)
                 try:
                     msgs = data.split(b'|')
                     if msgs[1] == b'beat':
@@ -59,11 +58,12 @@ class UDPRendezvousConnectionBase:
             beats = 0
             skip = True
             while True:
-                print(f'heartbeat {beats}, {skip}, {self.lastBeat}')
+                logging.info(
+                    f'heartbeat {beats}, {skip}, {self.lastBeat}', print=True)
                 if not skip:
                     beats -= 1
                     self.sock.sendto(
-                        UDPRendezvousProtocol.beatPrefix() +
+                        ToServerProtocol.beatPrefix() +
                         f'|{beats}'.encode(),
                         self.rendezvousServer)
                 skip = False
@@ -80,11 +80,11 @@ class UDPRendezvousConnectionBase:
         logging.info('ready to exchange messages\n', print=True)
         self.heart = threading.Thread(target=heartbeat, daemon=True)
         self.heart.start()
-        self.send(UDPRendezvousProtocol.checkinPrefix())
+        self.send(ToServerProtocol.checkinPrefix())
 
     def send(self, cmd: str, msgs: list[str] = None):
         ''' format and send a message to rendezvous server '''
-        if not UDPRendezvousMessage.isValidCommand(cmd):
+        if not ToServerMessage.isValidCommand(cmd):
             logging.error('command not valid', cmd, print=True)
         if isinstance(cmd, bytes):
             cmd = cmd.decode()

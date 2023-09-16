@@ -5,7 +5,7 @@ import threading
 from satorilib import logging
 
 
-class UDPConnection:
+class Connection:
     ''' raw connection functionality '''
 
     def __init__(self, port: int, peerPort: int, peerIp: str, messageCallback=None):

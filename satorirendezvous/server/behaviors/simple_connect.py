@@ -1,15 +1,18 @@
-'''
-raw connection ability - without any authorization
-'''
-
 from satorilib import logging
 from satorilib.concepts import TwoWayDictionary
-from satorirendezvous.server.protocol import UDPRendezvousMessage
-from satorirendezvous.server.behaviors.client import RendezvousClient
+from satorirendezvous.server.structs.message import ToServerMessage
+from satorirendezvous.server.structs.client import RendezvousClient
 logging.setup(file='/tmp/rendezvous.log')
 
 
-class ConnectAuthorizedBehavior():
+class ClientConnect():
+    ''' 
+    a set of behaviors the server performs when a client connects and sends
+    messages to it. remembers clients and the ports they used to connect clients
+    to each other. will connect clients to each other based upon the topics they
+    subscribe to. raw connection ability - without any authorization. (todo: 
+    break this up into smaller behaviors...)
+    '''
 
     def __init__(self):
         logging.info('starting rendezvous server...')
@@ -18,7 +21,7 @@ class ConnectAuthorizedBehavior():
         self.clientsBySubscription: dict[str, list[RendezvousClient]] = {}
 
     def process(self):
-        def _handleCheckIn(msg: UDPRendezvousMessage):
+        def _handleCheckIn(msg: ToServerMessage):
             ''' CHECKIN|msgId '''
             rendezvousClient = RendezvousClient(
                 address=msg.address,
@@ -103,7 +106,7 @@ class ConnectAuthorizedBehavior():
                 msgId=rendezvousClient.msg.msgId,
                 msg='beat')
 
-        def _manageFindClient(msg: UDPRendezvousMessage):
+        def _manageFindClient(msg: ToServerMessage):
             ''' finds client and attaches message to it's list of msgs '''
             rendezvousClient = self.findClient(ip=msg.ip, port=msg.port)
             if rendezvousClient is None:
@@ -115,7 +118,7 @@ class ConnectAuthorizedBehavior():
         while True:
             data, address = self.queue.get()
             logging.debug(f'connection from: {address} with: {data}')
-            msg = UDPRendezvousMessage.fromBytes(data, *address)
+            msg = ToServerMessage.fromBytes(data, *address)
             if msg.isCheckIn():
                 _handleCheckIn(msg)
             else:

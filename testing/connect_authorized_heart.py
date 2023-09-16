@@ -1,6 +1,5 @@
 '''
-connection ability - used to test the connect with key's that aren't encrypted
-clients can send information like {'pubkey': ''}
+raw connection ability - without any authorization
 this one has a heart beat so we can see when it looses connection.
 we discovered we loose connection to the client when the server has not sent the
 client anything and the client hasn't sent us anything for exactly 5 minutes. 
@@ -16,7 +15,7 @@ import threading
 from satorilib import logging
 from satorilib.concepts import TwoWayDictionary
 from satorilib.api.udp.rendezvous import UDPRendezvousMessage
-from ..client import RendezvousClient
+from satorirendezvous.server.structs.client import RendezvousClient
 logging.setup(file='/tmp/rendezvous.log')
 
 

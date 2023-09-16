@@ -1,11 +1,10 @@
 import random
-from satorilib import logging
 from satorilib.concepts import TwoWayDictionary
-from satorilib.api.udp.rendezvous import UDPRendezvousMessage
+from satorirendezvous.server.structs.message import ToServerMessage
 
 
 class RendezvousClient:
-    ''' a structure to hold the data for a client connection '''
+    ''' a structure describing a client's connection '''
 
     def __init__(
         self,
@@ -22,9 +21,9 @@ class RendezvousClient:
         self.ip: str = ip
         self.port: int = port
         self.address: tuple[str, int] = address
-        self.msgs: list[UDPRendezvousMessage] = []
+        self.msgs: list[ToServerMessage] = []
 
-    def addMsg(self, msg: UDPRendezvousMessage):
+    def addMsg(self, msg: ToServerMessage):
         self.msgs.append(msg)
 
     @property
@@ -45,14 +44,11 @@ class RendezvousClient:
     def randomAvailablePort(self, portRange: list[int]):
         if isinstance(portRange, set):
             portRange = list(portRange)
-        logging.debug('portRange:', len(portRange))
         blacklist = self.blacklistedPorts()
-        logging.debug('blacklist:', blacklist)
         if len(blacklist) > 0:
             port = next(iter(blacklist))
         else:
             return random.choice(portRange)
-        logging.debug('port11:', port)
         x = 0
         while port in blacklist:
             port = random.choice(portRange)
@@ -60,6 +56,6 @@ class RendezvousClient:
             if x > len(portRange):
                 # catch this, don't crash the server.
                 raise Exception(
-                    'unable to find an available port in the range: {}'.format(portRange))
-        logging.debug('port2:', port)
+                    'unable to find an available port in the range: '
+                    f'{portRange}')
         return port

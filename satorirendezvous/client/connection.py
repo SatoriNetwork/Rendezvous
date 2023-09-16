@@ -1,9 +1,9 @@
 ''' our (persistent) connection to the rendezvous server '''
 
-from satorilib.api.udp.rendezvous.base import UDPRendezvousConnectionBase
+from satorirendezvous.client.base import RendezvousConnectionBase
 
 
-class UDPRendezvousConnection(UDPRendezvousConnectionBase):
+class RendezvousConnection(RendezvousConnectionBase):
     ''' conn for server, using signature and key for identity  '''
 
     def __init__(self, signature: str, key: str, *args, **kwargs):

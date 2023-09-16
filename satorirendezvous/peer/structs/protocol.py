@@ -23,7 +23,7 @@ import datetime as dt
 from satorilib.api.time import datetimeToString, datetimeFromString, now
 
 
-class UDPProtocol():
+class PeerProtocol():
 
     @staticmethod
     def toBytes(msg: str) -> bytes:
@@ -47,11 +47,11 @@ class UDPProtocol():
 
     @staticmethod
     def askReady() -> str:
-        return UDPProtocol.readyPrefix() + b'?'
+        return PeerProtocol.readyPrefix() + b'?'
 
     @staticmethod
     def confirmReady() -> str:
-        return UDPProtocol.readyPrefix() + b'!'
+        return PeerProtocol.readyPrefix() + b'!'
 
     @staticmethod
     def requestObservationBefore(time: dt.datetime) -> bytes:
@@ -59,7 +59,7 @@ class UDPProtocol():
             time = datetimeToString(time)
         if isinstance(time, str):
             time = time.encode()
-        return UDPProtocol.requestPrefix() + b'|' + time
+        return PeerProtocol.requestPrefix() + b'|' + time
 
     @staticmethod
     def respondObservation(time: dt.datetime, data: str) -> bytes:
@@ -69,33 +69,8 @@ class UDPProtocol():
             time = datetimeToString(time)
         if isinstance(time, str):
             time = time.encode()
-        return UDPProtocol.respondPrefix() + b'|' + time + b'|' + data
+        return PeerProtocol.respondPrefix() + b'|' + time + b'|' + data
 
     @staticmethod
     def respondNoObservation() -> bytes:
-        return UDPProtocol.respondPrefix() + b'|' + b'NONE|NONE'
-
-
-class UDPMessage():
-    def __init__(self, sent: bool, message: bytes, time: dt.datetime = None):
-        self.message = message
-        self.sent = sent
-        self.time = time or now()
-
-    def messageAsString(self):
-        return self.message.decode()
-
-    def isConfirmedReady(self):
-        return self.message == UDPProtocol.confirmReady()
-
-    def isResponse(self):
-        return self.message.startswith(UDPProtocol.respondPrefix())
-
-    def isRequest(self):
-        return self.message.startswith(UDPProtocol.requestPrefix())
-
-    def isReady(self):
-        return self.message.startswith(UDPProtocol.readyPrefix())
-
-    def isBeat(self):
-        return self.message.startswith(UDPProtocol.beatPrefix())
+        return PeerProtocol.respondPrefix() + b'|' + b'NONE|NONE'

@@ -1,2 +1,2 @@
-from .connect import ConnectBehavior
-from .client import RendezvousClient
+from .simple_connect import ConnectionBehavior
+from .simple_pair import PairBehavior

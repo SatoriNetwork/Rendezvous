@@ -1,9 +1,13 @@
+import time
 from satorilib import logging
 logging.setup(file='/tmp/rendezvous.log')
 
 
-class PairBehavior():
-    ''' able to pair two clients together '''
+class Pair():
+    '''
+    a simple response behavior - pair clients together two by two, first come, 
+    first serve, without any authorization.
+    '''
 
     def __init__(self, *args, **kwargs):
         logging.info('starting rendezvous server...')
@@ -27,3 +31,8 @@ class PairBehavior():
             c2_addr, c2_port = c2
             self.sock.sendto(f'{c1_addr} {c1_port} {c2_port}'.encode(), c2)
             self.sock.sendto(f'{c2_addr} {c2_port} {c1_port}'.encode(), c1)
+
+    # there should be to need to override this
+    def runForever(self):
+        while True:
+            time.sleep(10)

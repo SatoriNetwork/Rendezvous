@@ -9,40 +9,38 @@ import json
 from time import sleep
 from typing import Union
 import datetime as dt
-from satorilib.api.udp.rendezvous import UDPRendezvousConnection, UDPRendezvousMessage, UDPRendezvousProtocol
-from satorilib.api.udp.client import UDPConnection, UDPMessage, UDPProtocol
 from satorilib.api.time import datetimeToString, now
 from satorilib.concepts import StreamId
 from satorilib.api.disk.disk import Disk
+from satorirendezvous.server.structs.message import ToServerMessage
+from satorirendezvous.server.structs.protocol import ToServerProtocol
+from satorirendezvous.client.connection import RendezvousConnection
+from satorirendezvous.peer.connection import Connection
+from satorirendezvous.peer.structs.message import PeerMessage
+from satorirendezvous.peer.structs.protocol import PeerProtocol
 
 
-class UDPChannel():
+class Channel():
     ''' manages a single connection between two nodes over UDP '''
 
     def __init__(self, streamId: StreamId, ip: str, port: int, localPort: int):
-        print(f'UDPChannel 1')
         self.streamId = streamId
-        print(f'UDPChannel 2')
         self.disk = Disk(self.streamId)
-        print(f'UDPChannel 3')
-        self.connection = UDPConnection(
+        self.connection = Connection(
             peerIp=ip,
             peerPort=port,
             port=localPort,
             # todo: messageCallback= function to handle messages
         )
-        print(f'UDPChannel 4')
-        self.messages: list[UDPMessage] = []
-        print(f'UDPChannel 5')
+        self.messages: list[PeerMessage] = []
         self.connect()
-        print(f'UDPChannel 6')
 
     def add(self, message: bytes, sent: bool, time: dt.datetime = None):
-        self.messages.append(UDPMessage(sent, message, time))
+        self.messages.append(PeerMessage(sent, message, time))
         self.messages = self.orderedMessages()
 
     def orderedMessages(self):
-        ''' returns the messages ordered by UDPMessage.time '''
+        ''' returns the messages ordered by PeerMessage.time '''
         return sorted(self.messages, key=lambda msg: msg.time)
 
     def connect(self):
@@ -75,7 +73,7 @@ class UDPChannel():
     def theirResponses(self):
         return [msg for msg in self.responses() if not msg.sent]
 
-    def mostRecentResponse(self, responses: list[UDPMessage] = None):
+    def mostRecentResponse(self, responses: list[PeerMessage] = None):
         responses = responses or self.theirResponses()
         if len(responses) == 0:
             return None
@@ -92,28 +90,28 @@ class UDPChannel():
             time = datetimeToString(time)
         observation = self.disk.lastRowStringBefore(timestap=time)
         if observation is None:
-            self.send(UDPProtocol.respondNoObservation())
+            self.send(PeerProtocol.respondNoObservation())
         else:
-            self.send(UDPProtocol.respondObservation(
+            self.send(PeerProtocol.respondObservation(
                 time=observation[0],
                 data=observation[1]))
 
 
-class UDPTopic():
+class Topic():
     ''' manages all our udp channels for a single topic '''
 
     def __init__(self, streamId: StreamId):
         self.streamId = streamId
-        self.channels: list[UDPChannel] = []
+        self.channels: list[Channel] = []
 
-    def readyChannels(self) -> list[UDPChannel]:
+    def readyChannels(self) -> list[Channel]:
         return [channel for channel in self.channels if channel.isReady()]
 
     def create(self, ip: str, port: int, localPort: int):
         print(f'CREATING: {ip}:{port},{localPort}')
-        self.add(UDPChannel(self.streamId, ip, port, localPort))
+        self.add(Channel(self.streamId, ip, port, localPort))
 
-    def add(self, channel: UDPChannel):
+    def add(self, channel: Channel):
         self.channels.append(channel)
 
     def broadcast(self, msg: bytes):
@@ -123,12 +121,12 @@ class UDPTopic():
     def getOneObservation(self, time: dt.datetime):
         ''' time is of the most recent observation '''
         channels = self.readyChannels()
-        msg = UDPProtocol.requestObservationBefore(time)
+        msg = PeerProtocol.requestObservationBefore(time)
         sentTime = now()
         for channel in channels:
             channel.send(msg)
         sleep(5)  # wait for responses, natural throttle
-        responses: list[Union[UDPMessage, None]] = [
+        responses: list[Union[PeerMessage, None]] = [
             channel.mostRecentResponse(channel.responseAfter(sentTime))
             for channel in channels]
         responseMessages = [
@@ -144,7 +142,7 @@ class UDPTopic():
         return mostPopularResponseMessage
 
 
-class UDPManager():
+class Peer():
     ''' manages connection to the rendezvous server and all our udp topics '''
 
     def __init__(self, streamIds: list[StreamId], signature: None, key: None):
@@ -165,16 +163,16 @@ class UDPManager():
                 author='a',
                 target='t',),
         ])
-        self.rendezvous: UDPRendezvousConnection = UDPRendezvousConnection(
+        self.rendezvous: RendezvousConnection = RendezvousConnection(
             messageCallback=self.handleRendezvousResponse,
             signature=signature,
             key=key,
         )
-        # self.topics: dict[str, UDPTopic] = {
-        #    topic: UDPTopic(streamId)
+        # self.topics: dict[str, Topic] = {
+        #    topic: Topic(streamId)
         #    for topic, streamId in self.streamIds
         # }
-        self.topics: dict[str, UDPTopic] = {}
+        self.topics: dict[str, Topic] = {}
         self.rendezvous.establish()
         self.sendTopics()
         # for streamId in streamIds:
@@ -209,9 +207,9 @@ class UDPManager():
         '''
         for topic, streamId in self.streamIds.items():
             if topic not in self.topics:
-                self.topics[topic] = UDPTopic(streamId)
+                self.topics[topic] = Topic(streamId)
                 self.rendezvous.send(
-                    cmd=UDPRendezvousProtocol.subscribePrefix(),
+                    cmd=ToServerProtocol.subscribePrefix(),
                     msgs=[
                         "signature doesn't matter during testing",
                         json.dumps({
