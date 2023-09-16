@@ -1,4 +1,5 @@
 # Rendezvous
+
 Satori Rendezvous server and peers functionalty.
 
 Uses UDP hole punching to establish a UDP p2p mesh network without the need to open ports on personal firewalls.
@@ -18,7 +19,8 @@ Each peer must maintain an active connection to the server. This way when new pe
 The Satori Network (satorinet.io) developed this method for p2p communication in order to incrementally share large amounts of data directly between Satori Neurons.
 
 ## use
-```
+
+```Python
 from Rendezvous import Server, ToServerProtocol, ToPeerProtocol, PeerProtocol
 
 Class MyProtocol(ToServerProtocol, ToPeerProtocol):
