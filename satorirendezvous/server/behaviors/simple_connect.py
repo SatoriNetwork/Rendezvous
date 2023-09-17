@@ -67,8 +67,18 @@ class ClientConnect():
 
     ### routing messages ###
 
+    def _authenticationHook(self, msg: ToServerMessage) -> bool:
+        ''' authentication hook '''
+        return True
+
+    def _getKey(self, msg: ToServerMessage) -> str:
+        ''' get key of message hook '''
+        return msg.key
+
     def _handleCheckIn(self, msg: ToServerMessage):
         ''' CHECKIN|msgId '''
+        if not self._authenticationHook(msg):
+            return False
         rendezvousClient = RendezvousClient(
             address=msg.address,
             ip=msg.ip,

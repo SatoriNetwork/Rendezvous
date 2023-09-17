@@ -3,13 +3,13 @@ from satorirendezvous.server.behaviors.simple_connect import ClientConnect
 from satorirendezvous.server.structs.client import RendezvousClient
 from satorirendezvous.server.structs.message import ToServerMessage
 
-# TODO: this is not finished yet. it should be able to authenticate. you'll
-# probably want to build this on top of SubscribeClientConnect. or build it on
-# top of this.
 
+class SubscribingClientConnect(ClientConnect):
+    ''' add the ability to subscribe to topics to the server '''
 
-class AuthenticateClientConnect(ClientConnect):
-    ''' add the ability to authenticate a client '''
+    def __init__(self):
+        super().__init__()
+        self.clientsBySubscription: dict[str, list[RendezvousClient]] = {}
 
     # override
     def routeMessage(
@@ -20,13 +20,22 @@ class AuthenticateClientConnect(ClientConnect):
         ''' route for subscription messages '''
         if msg.isSubscribe():
             self._handleSubscribe(rendezvousClient)
+        self.postRouteMessage(msg, rendezvousClient)
+
+    def postRouteMessage(
+        self,
+        msg: ToServerMessage,
+        rendezvousClient: RendezvousClient,
+    ):
+        ''' post route hook '''
+        pass
 
     def _handleSubscribe(self, rendezvousClient: RendezvousClient):
         ''' SUBSCRIBE|msgId|signature|key '''
         logging.debug('_handleSubscribe')
         logging.debug('rendezvousClient.msg', rendezvousClient.msg)
         logging.debug('rendezvousClient.msg.key', rendezvousClient.msg.key)
-        key = rendezvousClient.msg.key
+        key = self._getKey(rendezvousClient.msg)
         # this subscriptions should be a list of strings, I think it
         # decryptedKey.subscriptions should include all the streams
         # because I think we subscribe to all streams that we publish
