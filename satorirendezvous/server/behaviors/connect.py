@@ -16,8 +16,11 @@ class ClientConnect():
     break this up into smaller behaviors...)
     '''
 
-    def __init__(self):
+    def __init__(self, fullyConnected: bool = False):
         logging.info('starting rendezvous server...')
+        # if fullyConnected is True, then all clients will connect to all
+        # clients which is non-typical as it only works for small networks.
+        self.fullyConnected = fullyConnected
         self.portRange: set[int] = set(range(49153, 65536))
         self.clients: list[RendezvousClient] = []
 
@@ -65,7 +68,7 @@ class ClientConnect():
             f'{clientB.portFor(topic)}').encode(),
             clientB.address)
 
-    ### routing messages ###
+    ### authentication hooks ###
 
     def _authenticationHook(self, msg: ToServerMessage) -> bool:
         ''' authentication hook '''
@@ -74,6 +77,27 @@ class ClientConnect():
     def _getKey(self, msg: ToServerMessage) -> str:
         ''' get key of message hook '''
         return msg.key
+
+    ### connecting clients together ###
+
+    def _handleConnectToAll(
+        self,
+        rendezvousClient: RendezvousClient,
+    ):
+        topic = 'fullyConnected'
+        clients = [client for client in self.clients if client !=
+                   rendezvousClient]
+        portsTaken = {client.portFor(topic) for client in clients}
+        availablePorts = self.portRange - portsTaken
+        chosenPort = rendezvousClient.randomAvailablePort(availablePorts)
+        rendezvousClient.portsAssigned[topic] = chosenPort
+        for client in clients:
+            self.connectTwoClients(
+                topic=topic,
+                clientA=rendezvousClient,
+                clientB=client)
+
+    ### routing messages ###
 
     def _handleCheckIn(self, msg: ToServerMessage):
         ''' CHECKIN|msgId '''
@@ -88,6 +112,7 @@ class ClientConnect():
             address=msg.address,
             msgId=msg.msgId,
             msg='welcome to the Satori Rendezvous Server')
+        return rendezvousClient
 
     def _handlePorts(self, rendezvousClient: RendezvousClient):
         ''' PORTS|msgId|portsTaken '''
@@ -112,10 +137,11 @@ class ClientConnect():
 
     def routeMessage(
         self,
-        msg: ToServerMessage,
-        rendezvousClient: RendezvousClient,
+        msg: ToServerMessage,  # keep
+        rendezvousClient: RendezvousClient,  # keep
     ):
         ''' this is meant to be overridden if custom behavior is added '''
+
         pass
 
     def router(self):
@@ -126,7 +152,9 @@ class ClientConnect():
             logging.debug(f'connection from: {address} with: {data}')
             msg = ToServerMessage.fromBytes(data, *address)
             if msg.isCheckIn():
-                self._handleCheckIn(msg)
+                rendezvousClient = self._handleCheckIn(msg)
+                if self.fullyConnected:
+                    self._handleConnectToAll(rendezvousClient)
             else:
                 logging.debug('else')
                 rendezvousClient = self.findClient(ip=msg.ip, port=msg.port)

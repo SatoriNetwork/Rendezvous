@@ -1,2 +1,2 @@
-from .simple_connect import ClientConnect
-from .simple_pair import Pair
+from .connect import ClientConnect
+from .pair import Pair

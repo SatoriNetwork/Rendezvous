@@ -1,5 +1,5 @@
 from satorilib import logging
-from satorirendezvous.server.behaviors.simple_connect import ClientConnect
+from satorirendezvous.server.behaviors.connect import ClientConnect
 from satorirendezvous.server.structs.client import RendezvousClient
 from satorirendezvous.server.structs.message import ToServerMessage
 
@@ -24,8 +24,8 @@ class SubscribingClientConnect(ClientConnect):
 
     def postRouteMessage(
         self,
-        msg: ToServerMessage,
-        rendezvousClient: RendezvousClient,
+        msg: ToServerMessage,  # keep
+        rendezvousClient: RendezvousClient,  # keep
     ):
         ''' post route hook '''
         pass
@@ -41,7 +41,11 @@ class SubscribingClientConnect(ClientConnect):
         # because I think we subscribe to all streams that we publish
         # as well. but we'll use decryptedKey.streams because it
         # combines the two sets anyway.
-        subscriptions = key.streams()
+        if isinstance(key, str):
+            subscriptions = key.split('|')
+        else:
+            # assume a type that contains streams() prop
+            subscriptions = key.streams()
         logging.debug('subscriptions:', subscriptions)
         for subscription in subscriptions:
             # connect everyone to the new client
