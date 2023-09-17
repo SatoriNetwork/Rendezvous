@@ -4,11 +4,13 @@ Satori Rendezvous server and peers functionalty.
 
 Uses UDP hole punching to establish a UDP p2p mesh network without the need to open ports on personal firewalls.
 
-## benefits
+## pros
 
 In most cases peers do not need to modify their firewalls. NATs don't seem to cause an issue in most cases and this has even been tested over VPNs. It seems to be one of the simplest, yet most robust methods of p2p communication.
 
-## conceptual requirements
+## cons
+
+First of all, all communication is done over UDP, which is less reliable than TCP.
 
 This requires a centralized server to work. it's a rendezvous server, clients connect and the server provides them with information required to connect to their peers.
 
@@ -16,7 +18,7 @@ Each peer must maintain an active connection to the server. This way when new pe
 
 ## ideal usecase
 
-The Satori Network (satorinet.io) developed this method for p2p communication in order to incrementally share large amounts of data directly between Satori Neurons.
+The Satori Network (satorinet.io) developed this method for p2p communication in order to allow Satori Neurons to incrementally source data directly from neighboring Satori Neurons. Since the data is sourced incrementally and redundantly (from multiple neighbors) the decreased reliability of UDP isn't an issue.
 
 ## use
 

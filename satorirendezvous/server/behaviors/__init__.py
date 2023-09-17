@@ -1,2 +1,2 @@
-from .simple_connect import ConnectionBehavior
-from .simple_pair import PairBehavior
+from .simple_connect import ClientConnect
+from .simple_pair import Pair

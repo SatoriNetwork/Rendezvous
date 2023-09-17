@@ -6,17 +6,18 @@ from satorirendezvous.server.behaviors import ClientConnect
 logging.setup(file='/tmp/rendezvous.log')
 
 
-class RendezvousServer(ClientConnect):
+class RendezvousServer:
     ''' the rendezvous server '''
 
-    def __init__(self, port: int = 49152):
-        super().__init__()
+    def __init__(self, port: int = 49152, behavior: ClientConnect = None):
         self.sock: socket.socket = socket.socket(
             socket.AF_INET,
             socket.SOCK_DGRAM)
         self.sock.bind(('0.0.0.0', port))
         self.queue = queue.Queue()
-        self.worker = threading.Thread(target=self.process)
+        self.behavior = behavior or ClientConnect()
+        self.behavior.setSockQueue(self.sock, self.queue)
+        self.worker = threading.Thread(target=behavior.router)
         self.worker.start()
 
     def runForever(self):
