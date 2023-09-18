@@ -34,12 +34,8 @@ class ToServerMessage():
 
     @staticmethod
     def isValidCommand(cmd: bytes) -> bool:
-        cmd = cmd.encode() if isinstance(cmd, str) else cmd
-        return cmd in [
-            ToServerProtocol.checkinPrefix(),
-            ToServerProtocol.portsPrefix(),
-            ToServerProtocol.subscribePrefix(),
-            ToServerProtocol.beatPrefix()]
+        return ToServerProtocol.isValidCommand(
+            cmd.encode() if isinstance(cmd, str) else cmd)
 
     def __init__(
         self,

@@ -17,3 +17,11 @@ class ToServerSubscribeProtocol(ToServerProtocol):
         if isinstance(key, str):
             key = key.encode()
         return ToServerProtocol.subscribePrefix() + b'|' + signature + b'|' + key
+
+    @staticmethod
+    def prefixes():
+        return [
+            ToServerSubscribeProtocol.checkinPrefix(),
+            ToServerSubscribeProtocol.portsPrefix(),
+            ToServerSubscribeProtocol.beatPrefix(),
+            ToServerSubscribeProtocol.subscribePrefix()]

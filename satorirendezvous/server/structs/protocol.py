@@ -51,3 +51,14 @@ class ToServerProtocol():
         if isinstance(ports, str):
             ports = ports.encode()
         return ToServerProtocol.portsPrefix() + b'|' + ports
+
+    @staticmethod
+    def prefixes():
+        return [
+            ToServerProtocol.checkinPrefix(),
+            ToServerProtocol.portsPrefix(),
+            ToServerProtocol.beatPrefix()]
+
+    @staticmethod
+    def isValidCommand(cmd: bytes) -> bool:
+        return cmd in ToServerProtocol.prefixes()

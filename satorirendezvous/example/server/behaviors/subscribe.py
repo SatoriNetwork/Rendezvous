@@ -1,7 +1,7 @@
 from satorilib import logging
 from satorirendezvous.server.behaviors.connect import ClientConnect
 from satorirendezvous.server.structs.client import RendezvousClient
-from satorirendezvous.server.structs.message import ToServerMessage
+from satorirendezvous.example.server.structs.message import ToServerSubscribeMessage
 
 
 class SubscribingClientConnect(ClientConnect):
@@ -14,7 +14,7 @@ class SubscribingClientConnect(ClientConnect):
     # override
     def routeMessage(
         self,
-        msg: ToServerMessage,
+        msg: ToServerSubscribeMessage,
         rendezvousClient: RendezvousClient,
     ):
         ''' route for subscription messages '''
@@ -24,7 +24,7 @@ class SubscribingClientConnect(ClientConnect):
 
     def postRouteMessage(
         self,
-        msg: ToServerMessage,  # keep
+        msg: ToServerSubscribeMessage,  # keep
         rendezvousClient: RendezvousClient,  # keep
     ):
         ''' post route hook '''
