@@ -15,9 +15,7 @@ the available commands are:
     
     PORTS - the client is telling the server, not to assign it these ports
     PORTS|msgId|portsTaken
-    
-    SUBSCRIBE - the client is subscribing to one or more topics
-    SUBSCRIBE|msgId|signature|key
+   
 """
 
 
@@ -43,10 +41,6 @@ class ToServerProtocol():
         return b'PORTS'
 
     @staticmethod
-    def subscribePrefix() -> bytes:
-        return b'SUBSCRIBE'
-
-    @staticmethod
     def beatPrefix() -> bytes:
         return b'BEAT'
 
@@ -57,11 +51,3 @@ class ToServerProtocol():
         if isinstance(ports, str):
             ports = ports.encode()
         return ToServerProtocol.portsPrefix() + b'|' + ports
-
-    @staticmethod
-    def subscribe(signature: str, key: str) -> bytes:
-        if isinstance(signature, str):
-            signature = signature.encode()
-        if isinstance(key, str):
-            key = key.encode()
-        return ToServerProtocol.subscribePrefix() + b'|' + signature + b'|' + key
