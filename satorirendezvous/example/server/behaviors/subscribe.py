@@ -1,3 +1,4 @@
+import time
 from satorilib import logging
 from satorirendezvous.server.behaviors.connect import ClientConnect
 from satorirendezvous.server.structs.client import RendezvousClient
@@ -30,17 +31,25 @@ class SubscribingClientConnect(ClientConnect):
         ''' post route hook '''
         pass
 
+    def preSubscriptionHook(self, rendezvousClient: RendezvousClient):
+        ''' pre subscription hook '''
+        rendezvousClient.seen()
+
     def _handleSubscribe(self, rendezvousClient: RendezvousClient):
         ''' SUBSCRIBE|msgId|signature|key '''
         logging.debug('_handleSubscribe')
         logging.debug('rendezvousClient.msg', rendezvousClient.msg)
         logging.debug('rendezvousClient.msg.key', rendezvousClient.msg.key)
         key = self._getKey(rendezvousClient.msg)
+
         # this subscriptions should be a list of strings, I think it
         # decryptedKey.subscriptions should include all the streams
         # because I think we subscribe to all streams that we publish
         # as well. but we'll use decryptedKey.streams because it
         # combines the two sets anyway.
+        if key is None:
+            return
+        self.preSubscriptionHook(rendezvousClient)
         if isinstance(key, str):
             subscriptions = key.split('|')
         else:
@@ -79,9 +88,27 @@ class SubscribingClientConnect(ClientConnect):
             # that later.
             for peer in peers:
                 if peer != rendezvousClient:
-                    self.connectTwoClients(
+                    self._connectClientsTogether(
                         topic=subscription,
-                        clientA=rendezvousClient,
-                        clientB=peer)
+                        client=rendezvousClient,
+                        peer=peer)
         logging.debug('self.clientsBySubscription')
         logging.debug(self.clientsBySubscription)
+
+    def _connectClientsTogether(
+        self,
+        topic: str,
+        client: RendezvousClient,
+        peer: RendezvousClient,
+    ) -> str:
+        ''' connects the two clients '''
+        if peer.lastSeen > time.time()-60*60*24:
+            self._notifyClientOfPeer(
+                topic=topic,
+                clientA=client,
+                clientB=peer)
+            if peer.lastSeen > time.time()-60*60*5:
+                self._notifyClientOfPeer(
+                    topic=topic,
+                    clientA=peer,
+                    clientB=client)

@@ -49,6 +49,21 @@ class ClientConnect():
         logging.debug('responding to:', address, f'{msgId}|{msg}')
         self.sock.sendto(f'{msgId}|{msg}'.encode(), address)
 
+    def _notifyClientOfPeer(
+        self,
+        topic: str,
+        client: RendezvousClient,
+        peer: RendezvousClient,
+    ):
+        '''
+        tells client the peer's address and port, the topic, and which port to
+        use for that topic.
+        '''
+        self.sock.sendto((
+            f'CONNECTION|{topic}|{peer.ip}|{peer.portFor(topic)}|'
+            f'{client.portFor(topic)}').encode(),
+            client.address)
+
     def connectTwoClients(
         self,
         topic: str,
@@ -59,14 +74,8 @@ class ClientConnect():
         tells them each other's address and port, the topic, and which port to
         use for that topic.
         '''
-        self.sock.sendto((
-            f'CONNECTION|{topic}|{clientB.ip}|{clientB.portFor(topic)}|'
-            f'{clientA.portFor(topic)}').encode(),
-            clientA.address)
-        self.sock.sendto((
-            f'CONNECTION|{topic}|{clientA.ip}|{clientA.portFor(topic)}|'
-            f'{clientB.portFor(topic)}').encode(),
-            clientB.address)
+        self._notifyClientOfPeer(topic, clientA, clientB)
+        self._notifyClientOfPeer(topic, clientB, clientA)
 
     ### authentication hooks ###
 

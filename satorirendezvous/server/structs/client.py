@@ -1,4 +1,5 @@
 import random
+import time
 from satorilib.concepts import TwoWayDictionary
 from satorirendezvous.server.structs.message import ToServerMessage
 
@@ -22,9 +23,13 @@ class RendezvousClient:
         self.port: int = port
         self.address: tuple[str, int] = address
         self.msgs: list[ToServerMessage] = []
+        self.seen()
 
     def addMsg(self, msg: ToServerMessage):
         self.msgs.append(msg)
+
+    def seen(self):
+        self.lastSeen = time.time()
 
     @property
     def msg(self):
