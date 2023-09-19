@@ -55,33 +55,23 @@ class SubscribingClientConnect(ClientConnect):
         else:
             # assume a type that contains streams() prop
             subscriptions = key.streams()
-        logging.debug('subscriptions:', subscriptions)
         for subscription in subscriptions:
             # connect everyone to the new client
             # - assign the client a port number for this topic
             # -- get a list of all ports not taken for that topic
             # -- get an available port from that list for the client
-            logging.debug('subscription:', subscription)
-            peers = self.clientsBySubscription.get(subscription) or []
-            logging.debug('peers:', peers)
-            if len(peers) == 0:
-                self.clientsBySubscription[subscription] = [
-                    rendezvousClient]
-            else:
-                self.clientsBySubscription[subscription].append(
-                    rendezvousClient)
-            logging.debug('self.clientsBySubscription1:',
-                          self.clientsBySubscription)
-            portsTaken = {peer.portFor(subscription) for peer in peers}
-            logging.debug('portsTaken:', portsTaken)
-            availablePorts = self.portRange - portsTaken
-            logging.debug('availablePorts:', len(availablePorts))
-            chosenPort = rendezvousClient.randomAvailablePort(
-                availablePorts)
-            logging.debug('chosenPort:', chosenPort)
-            rendezvousClient.portsAssigned[subscription] = chosenPort
-            logging.debug('rendezvousClient:',
-                          rendezvousClient.portsAssigned)
+            peers = [
+                peer for peer in self.clientsBySubscription.get(
+                    subscription) or []
+                if peer.lastSeen > time.time()-60*60*24]
+            if rendezvousClient not in peers:
+                portsTaken = {peer.portFor(subscription) for peer in peers}
+                availablePorts = self.portRange - portsTaken
+                chosenPort = rendezvousClient.randomAvailablePort(
+                    availablePorts)
+                rendezvousClient.portsAssigned[subscription] = chosenPort
+                peers.append(rendezvousClient)
+            self.clientsBySubscription[subscription] = peers
             # if this connection process takes too long it should be
             # moved to a thread. actually we should just move all this
             # to a stream and use rx like the node does, but we'll do
@@ -102,13 +92,12 @@ class SubscribingClientConnect(ClientConnect):
         peer: RendezvousClient,
     ) -> str:
         ''' connects the two clients '''
-        if peer.lastSeen > time.time()-60*60*24:
+        self._notifyClientOfPeer(
+            topic=topic,
+            clientA=client,
+            clientB=peer)
+        if peer.lastSeen > time.time()-60*60*5:
             self._notifyClientOfPeer(
                 topic=topic,
-                clientA=client,
-                clientB=peer)
-            if peer.lastSeen > time.time()-60*60*5:
-                self._notifyClientOfPeer(
-                    topic=topic,
-                    clientA=peer,
-                    clientB=client)
+                clientA=peer,
+                clientB=client)
