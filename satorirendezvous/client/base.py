@@ -50,6 +50,9 @@ class RendezvousConnectionBase:
                     logging.warning('error pushing message to inbox', e, data)
                 self.messageCallback(data, addr)
 
+        # todo: remove this, heartbeat is not necessary, test that theory.
+        # replace this actually, we'll basically checkin a few times per day,
+        # getting all peers of our subscriptions each time.
         def heartbeat():
             '''
             sends heartbeat to rendezvous server 3 times per 5 minutes,

@@ -4,6 +4,13 @@ this needs to be re-thought.
 listen we have a connection to the Rendezvous server
 we also have many streams which represent a topic
 we need to make many connections per topic
+
+todo: modularize this
+also remove the hard coded functionality and make a new layer that manages the
+topic synchronization. we have a design now that stays connected to the server
+and only asks for our peers per topic once. No. we should ask for our peers
+a few times a day. and just send in all our topics each time. but that should
+be handled by a layer above this. we have to plan it out.
 '''
 import json
 from time import sleep
