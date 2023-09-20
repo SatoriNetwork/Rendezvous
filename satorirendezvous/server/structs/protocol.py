@@ -19,18 +19,13 @@ the available commands are:
 """
 
 
-class ToServerProtocol():
+from satorirendezvous.lib.protocol import Protocol
+
+
+class ToServerProtocol(Protocol):
     '''
     a structure describing the various commands a client can send to the server
     '''
-
-    @staticmethod
-    def toBytes(msg: str) -> bytes:
-        return msg.encode()
-
-    @staticmethod
-    def fromBytes(msg: bytes) -> str:
-        return msg.decode()
 
     @staticmethod
     def checkinPrefix() -> bytes:

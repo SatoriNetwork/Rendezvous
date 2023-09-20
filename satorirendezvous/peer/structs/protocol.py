@@ -22,12 +22,10 @@ a response with the observation. if there is no observation, NONE is returned:
 import datetime as dt
 from satorilib.api.time import datetimeToString, datetimeFromString, now
 
+from satorirendezvous.lib.protocol import Protocol
 
-class PeerProtocol():
 
-    @staticmethod
-    def toBytes(msg: str) -> bytes:
-        return msg.encode()
+class PeerProtocol(Protocol):
 
     @staticmethod
     def readyPrefix() -> bytes:

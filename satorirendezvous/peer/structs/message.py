@@ -1,5 +1,5 @@
 import datetime as dt
-from satorilib.api.time import datetimeToString, datetimeFromString, now
+from satorilib.api.time import now
 from satorirendezvous.peer.structs.protocol import PeerProtocol
 
 
