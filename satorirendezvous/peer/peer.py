@@ -16,6 +16,7 @@ import json
 from time import sleep
 from typing import Union
 import datetime as dt
+import socket
 from satorilib.api.time import datetimeToString, now
 from satorilib.concepts import StreamId
 from satorilib.api.disk.disk import Disk
@@ -107,9 +108,13 @@ class Channel():
 class Topic():
     ''' manages all our udp channels for a single topic '''
 
-    def __init__(self, streamId: StreamId):
+    def __init__(self, streamId: StreamId, port: int):
         self.streamId = streamId
         self.channels: list[Channel] = []
+        # bind a port for this topic, each channel will get a peer port
+        self.port = port
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind(('0.0.0.0', self.port))
 
     def readyChannels(self) -> list[Channel]:
         return [channel for channel in self.channels if channel.isReady()]

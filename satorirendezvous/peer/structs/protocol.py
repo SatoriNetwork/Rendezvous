@@ -1,9 +1,6 @@
 '''
 this holds the protocol for node-to-node communication over udp.
 
-this does not contain the protocol for establishing a connection over UDP. that
-is in the file satorilib/api/udp/rendezvous/protocol.py
-
 we first of all need a way know if we're connected and ready to talk. they'll
 both send a message on repeat of "READY?" until the other responds with "READY!"
 once they both get a response of ready and have responded ready they'll talk. 
@@ -40,10 +37,6 @@ class PeerProtocol(Protocol):
         return b'RESPOND'
 
     @staticmethod
-    def beatPrefix() -> bytes:
-        return b'BEAT'
-
-    @staticmethod
     def askReady() -> str:
         return PeerProtocol.readyPrefix() + b'?'
 
@@ -78,8 +71,7 @@ class PeerProtocol(Protocol):
         return [
             PeerProtocol.readyPrefix(),
             PeerProtocol.requestPrefix(),
-            PeerProtocol.respondPrefix(),
-            PeerProtocol.beatPrefix()]
+            PeerProtocol.respondPrefix()]
 
     @staticmethod
     def isValidCommand(cmd: bytes) -> bool:

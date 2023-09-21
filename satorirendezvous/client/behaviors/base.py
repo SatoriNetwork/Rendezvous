@@ -14,8 +14,8 @@ class EstablishConnection:
         self,
         serverHost: str,
         serverPort: int,
+        socket: socket.socket,
         onMessage: function = None,
-        socket: socket.socket = None,
         timed: bool = True,
     ):
         # could allow us to keep track of which messages were responded to

@@ -41,8 +41,10 @@ class FromServerMessage():
     def commandBytes(self):
         return ToClientProtocol.toBytes(self.command)
 
+    @property
     def isResponse(self):
         return self.commandBytes == ToClientProtocol.responsePrefix()
 
+    @property
     def isConnect(self):
         return self.commandBytes == ToClientProtocol.connectPrefix()

@@ -4,25 +4,32 @@ from satorirendezvous.peer.structs.protocol import PeerProtocol
 
 
 class PeerMessage():
-    def __init__(self, sent: bool, message: bytes, time: dt.datetime = None):
-        self.message = message
+
+    def __init__(self, sent: bool, raw: bytes, time: dt.datetime = None):
+        self.raw = raw
         self.sent = sent
         self.time = time or now()
 
+    @property
     def messageAsString(self):
-        return self.message.decode()
+        return self.raw.decode()
 
+    @property
     def isConfirmedReady(self):
-        return self.message == PeerProtocol.confirmReady()
+        return self.raw == PeerProtocol.confirmReady()
 
+    @property
     def isResponse(self):
-        return self.message.startswith(PeerProtocol.respondPrefix())
+        return self.raw.startswith(PeerProtocol.respondPrefix())
 
+    @property
     def isRequest(self):
-        return self.message.startswith(PeerProtocol.requestPrefix())
+        return self.raw.startswith(PeerProtocol.requestPrefix())
 
+    @property
     def isReady(self):
-        return self.message.startswith(PeerProtocol.readyPrefix())
+        return self.raw.startswith(PeerProtocol.readyPrefix())
 
+    @property
     def isBeat(self):
-        return self.message.startswith(PeerProtocol.beatPrefix())
+        return self.raw.startswith(PeerProtocol.beatPrefix())
