@@ -1,5 +1,5 @@
 ''' connects to the rendezvous server '''
-
+import time
 import threading
 import socket
 from satorilib import logging
@@ -15,7 +15,8 @@ class EstablishConnection:
         serverHost: str,
         serverPort: int,
         onMessage: function = None,
-        socket: socket.socket = None
+        socket: socket.socket = None,
+        timed: bool = True,
     ):
         # could allow us to keep track of which messages were responded to
         self.msgId = 0
@@ -25,6 +26,8 @@ class EstablishConnection:
         self.port = None
         self.inbox = []
         self.outbox = {}
+        self.listen = True
+        self.timed = timed
 
     def display(self, msg, addr):
         logging.info(f'from: {addr}, {msg}', print=True)
@@ -32,30 +35,39 @@ class EstablishConnection:
     def show(self):
         logging.info(f'my port: {self.port}', print=True)
 
+    def stop(self):
+        self.listen = False
+        self.listener.join()  # Wait for the thread to finish
+
     def establish(self):
         ''' connect to rendezvous '''
-        def listen():
-            '''
-            listen for messages from rendezvous server
-            saves message to inbox
-            message from server is of this format: f'{command}|{msgId}|{msg}'
-            or f'{command}|{stuff}...'
-            calls the callback function with the message and address            
-            '''
-            while True:
-                data, addr = self.sock.recvfrom(1024)
-                msg = FromServerMessage.fromBytes(data)
-                try:
-                    self.inbox.append(msg)
-                except Exception as e:
-                    logging.warning('error with inbox', e, data, print=True)
-                self.onMessage(data, addr)
-
         logging.info('connecting to rendezvous server', print=True)
-        self.listener = threading.Thread(target=listen, daemon=True)
+        self.listener = threading.Thread(target=self.hear, daemon=True)
         self.listener.start()
         # self.sock.sendto(b'0', self.rendezvousServer)
         self.send(ToServerProtocol.checkinPrefix())
+
+    def hear(self):
+        '''
+        listen for messages from rendezvous server
+        saves message to inbox
+        message from server is of this format: f'{command}|{msgId}|{msgs}...'
+        or f'{command}|{msgs}...'
+        calls the callback function with the message and address            
+        '''
+        if self.timed:
+            start = time.time()
+        while self.listen and (
+                (not self.timed) or
+                (time.time() - start > 5*60)
+        ):
+            data, addr = self.sock.recvfrom(1024)
+            msg = FromServerMessage.fromBytes(data)
+            try:
+                self.inbox.append(msg)
+            except Exception as e:
+                logging.warning('error with inbox', e, data, print=True)
+            self.onMessage(data, addr)
 
     def send(self, cmd: str, msgs: list[str] = None):
         ''' compiles a payload including msgId, updates outbox, and sends '''
