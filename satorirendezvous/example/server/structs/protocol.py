@@ -1,4 +1,4 @@
-from satorirendezvous.server.structs.protocol import ToServerProtocol
+from satorirendezvous.client.structs.protocol import ToServerProtocol
 
 
 class ToServerSubscribeProtocol(ToServerProtocol):

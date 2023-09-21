@@ -1,7 +1,7 @@
 import json
 from satorilib import logging
 from satorilib.concepts import TwoWayDictionary
-from satorirendezvous.server.structs.protocol import ToServerProtocol
+from satorirendezvous.client.structs.protocol import ToServerProtocol
 
 
 class ToServerMessage():
@@ -23,20 +23,6 @@ class ToServerMessage():
             message = parts[2]
         return ToServerMessage(sent, ip, port, command, msgId, message)
 
-    @staticmethod
-    def asStr(msg: bytes) -> str:
-        if isinstance(msg, bytes):
-            return msg.decode()
-        if isinstance(msg, str):
-            return msg
-        # what else could it be?
-        return str(msg)
-
-    @staticmethod
-    def isValidCommand(cmd: bytes) -> bool:
-        return ToServerProtocol.isValidCommand(
-            cmd.encode() if isinstance(cmd, str) else cmd)
-
     def __init__(
         self,
         sent: bool,
@@ -44,7 +30,7 @@ class ToServerMessage():
         port: int,
         command: bytes,
         msgId: bytes,
-        message: bytes
+        message: bytes,
     ):
         self.malformed = False
         if command is None or msgId is None:
@@ -60,26 +46,15 @@ class ToServerMessage():
         self.setPortsTaken()
         self.signatureBytes = None
         self.keyBytes = None
-        self.setSignatureAndKey()
-        self.command = ToServerMessage.asStr(self.commandBytes)
-        self.msgId = ToServerMessage.asStr(self.msgIdBytes)
-        self.message = ToServerMessage.asStr(self.messageBytes)
-        self.signature = ToServerMessage.asStr(self.signatureBytes)
-        self.key = ToServerMessage.asStr(self.keyBytes)
+        self.command = ToServerProtocol.toStr(self.commandBytes)
+        self.msgId = ToServerProtocol.toStr(self.msgIdBytes)
+        self.message = ToServerProtocol.toStr(self.messageBytes)
+        self.signature = ToServerProtocol.toStr(self.signatureBytes)
+        self.key = ToServerProtocol.toStr(self.keyBytes)
 
     @property
     def address(self):
         return (self.ip, self.port)
-
-    def setSignatureAndKey(self):
-        if self.isCheckIn() or self.isSubscribe():
-            if self.messageBytes is not None:
-                parts = self.messageBytes.split(b'|', 1)
-                if len(parts) == 2:
-                    self.signatureBytes = parts[0]
-                    self.keyBytes = parts[1]
-                else:
-                    self.malformed = True
 
     def setPortsTaken(self):
         if self.isPortsTaken():
@@ -95,9 +70,6 @@ class ToServerMessage():
 
     def isPortsTaken(self):
         return self.commandBytes == ToServerProtocol.portsPrefix()
-
-    def isSubscribe(self):
-        return self.commandBytes == ToServerProtocol.subscribePrefix()
 
     def isBeat(self):
         return self.commandBytes == ToServerProtocol.beatPrefix()

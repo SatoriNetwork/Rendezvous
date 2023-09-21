@@ -5,6 +5,18 @@ from satorirendezvous.server.structs.message import ToServerMessage
 class ToServerSubscribeMessage(ToServerMessage):
     ''' a strcuture describing a message from a client to the server '''
 
+    def __init__(
+        self,
+        sent: bool,
+        ip: str,
+        port: int,
+        command: bytes,
+        msgId: bytes,
+        message: bytes,
+    ):
+        super.__init__(sent, ip, port, command, msgId, message)
+        self.setSignatureAndKey()
+
     # override
     @staticmethod
     def isValidCommand(cmd: bytes) -> bool:

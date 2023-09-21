@@ -171,9 +171,11 @@ class Peer():
                 target='t',),
         ])
         self.rendezvous: RendezvousConnection = RendezvousConnection(
-            messageCallback=self.handleRendezvousResponse,
             signature=signature,
             key=key,
+            host='161.35.238.159',
+            port=49152,
+            onMessage=self.handleRendezvousResponse,
         )
         # self.topics: dict[str, Topic] = {
         #    topic: Topic(streamId)

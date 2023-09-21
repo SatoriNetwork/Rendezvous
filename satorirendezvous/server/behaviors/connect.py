@@ -2,6 +2,8 @@ import socket
 import queue
 from satorilib import logging
 from satorilib.concepts import TwoWayDictionary
+from satorirendezvous.client.structs.protocol import ToServerProtocol
+from satorirendezvous.server.structs.protocol import ToClientProtocol
 from satorirendezvous.server.structs.message import ToServerMessage
 from satorirendezvous.server.structs.client import RendezvousClient
 logging.setup(file='/tmp/rendezvous.log')
@@ -46,8 +48,13 @@ class ClientConnect():
     ### using socket ###
 
     def respond(self, address: tuple[str, int], msgId: str, msg: str):
-        logging.debug('responding to:', address, f'{msgId}|{msg}')
-        self.sock.sendto(f'{msgId}|{msg}'.encode(), address)
+        ''' f'RESPONSE|{msgId}|{msg}' '''
+        self.sock.sendto(
+            ToClientProtocol.compile(
+                ToClientProtocol.responsePrefix(),
+                msgId,
+                msg),
+            address)
 
     def _notifyClientOfPeer(
         self,
@@ -59,9 +66,10 @@ class ClientConnect():
         tells client the peer's address and port, the topic, and which port to
         use for that topic.
         '''
-        self.sock.sendto((
-            f'CONNECTION|{topic}|{peer.ip}|{peer.portFor(topic)}|'
-            f'{client.portFor(topic)}').encode(),
+        self.sock.sendto(
+            ToClientProtocol.compile(
+                ToClientProtocol.connectPrefix(),
+                topic, peer.ip, peer.portFor(topic), client.portFor(topic)),
             client.address)
 
     def connectTwoClients(

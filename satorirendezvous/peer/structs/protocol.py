@@ -72,3 +72,18 @@ class PeerProtocol(Protocol):
     @staticmethod
     def respondNoObservation() -> bytes:
         return PeerProtocol.respondPrefix() + b'|' + b'NONE|NONE'
+
+    @staticmethod
+    def prefixes():
+        return [
+            PeerProtocol.readyPrefix(),
+            PeerProtocol.requestPrefix(),
+            PeerProtocol.respondPrefix(),
+            PeerProtocol.beatPrefix()]
+
+    @staticmethod
+    def isValidCommand(cmd: bytes) -> bool:
+        return PeerProtocol.toBytes(cmd) in PeerProtocol.prefixes() or any([
+            PeerProtocol.toBytes(cmd).startswith(prefix)
+            for prefix in PeerProtocol.prefixes()
+        ])

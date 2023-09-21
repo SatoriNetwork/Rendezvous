@@ -1,59 +1,27 @@
-"""
-this holds the protocol for node-rendezvous communication over udp.
-
-since only a very simple static protocol is needed, and we want to minimize 
-package sizes this doesn't even use json. for any complicated communication
-replacing the entire protocol is recommended.
-
-client to server: 'COMMAND|msgId(|data)'
-server to client: always responds with 'msgId(|response)'
-
-all conversation is done over UDP, and in chunks of 1028 bytes or less.
-the available commands are:
-    CHECKIN - the client is checking in with the server
-    CHECKIN|msgId|signature|idKey
-    
-    PORTS - the client is telling the server, not to assign it these ports
-    PORTS|msgId|portsTaken
-   
-"""
-
-
 from satorirendezvous.lib.protocol import Protocol
 
 
-class ToServerProtocol(Protocol):
+class ToClientProtocol(Protocol):
     '''
     a structure describing the various commands a client can send to the server
     '''
 
     @staticmethod
-    def checkinPrefix() -> bytes:
-        return b'CHECKIN'
+    def responsePrefix() -> bytes:
+        return b'RESPONSE'
 
     @staticmethod
-    def portsPrefix() -> bytes:
-        return b'PORTS'
-
-    @staticmethod
-    def beatPrefix() -> bytes:
-        return b'BEAT'
-
-    @staticmethod
-    def portsTaken(ports: list[str]) -> bytes:
-        if isinstance(ports, list):
-            ports = ','.join(ports)
-        if isinstance(ports, str):
-            ports = ports.encode()
-        return ToServerProtocol.portsPrefix() + b'|' + ports
+    def connectPrefix() -> bytes:
+        return b'CONNECT'
 
     @staticmethod
     def prefixes():
         return [
-            ToServerProtocol.checkinPrefix(),
-            ToServerProtocol.portsPrefix(),
-            ToServerProtocol.beatPrefix()]
+            ToClientProtocol.responsePrefix(),
+            ToClientProtocol.connectPrefix(),
+        ]
 
     @staticmethod
     def isValidCommand(cmd: bytes) -> bool:
-        return cmd in ToServerProtocol.prefixes()
+        return ToClientProtocol.toBytes(cmd) in ToClientProtocol.prefixes() 
+            
