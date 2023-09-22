@@ -27,17 +27,10 @@ class ToServerProtocol(Protocol):
     a structure describing the various commands a client can send to the server
     '''
 
-    @staticmethod
-    def checkinPrefix() -> bytes:
-        return b'CHECKIN'
-
-    @staticmethod
-    def portsPrefix() -> bytes:
-        return b'PORTS'
-
-    @staticmethod
-    def beatPrefix() -> bytes:
-        return b'BEAT'
+    checkinPrefix: bytes = b'CHECKIN'
+    portsPrefix: bytes = b'PORTS'
+    beatPrefix: bytes = b'BEAT'
+    fullyConnectedKeyword = 'fullyConnected'
 
     @staticmethod
     def portsTaken(ports: list[str]) -> bytes:
@@ -45,14 +38,14 @@ class ToServerProtocol(Protocol):
             ports = ','.join(ports)
         if isinstance(ports, str):
             ports = ports.encode()
-        return ToServerProtocol.portsPrefix() + b'|' + ports
+        return ToServerProtocol.portsPrefix + b'|' + ports
 
     @staticmethod
     def prefixes():
         return [
-            ToServerProtocol.checkinPrefix(),
-            ToServerProtocol.portsPrefix(),
-            ToServerProtocol.beatPrefix()]
+            ToServerProtocol.checkinPrefix,
+            ToServerProtocol.portsPrefix,
+            ToServerProtocol.beatPrefix]
 
     @staticmethod
     def isValidCommand(cmd: bytes) -> bool:

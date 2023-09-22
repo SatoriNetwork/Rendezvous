@@ -48,7 +48,7 @@ class MaintainConnection(EstablishConnection):
                     f'heartbeat {beats}, {skip}, {self.lastBeat}', print=True)
                 if not skip:
                     beats -= 1
-                    self.send(ToServerProtocol.beatPrefix(), beats)
+                    self.send(ToServerProtocol.beatPrefix, beats)
                 skip = False
                 time.sleep(99)
                 if self.lastBeat > time.time() - 99:

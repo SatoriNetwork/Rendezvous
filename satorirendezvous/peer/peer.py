@@ -1,239 +1,45 @@
-'''
-this should probably be moved to the node 
-this needs to be re-thought.
-listen we have a connection to the Rendezvous server
-we also have many streams which represent a topic
-we need to make many connections per topic
-
-todo: modularize this
-also remove the hard coded functionality and make a new layer that manages the
-topic synchronization. we have a design now that stays connected to the server
-and only asks for our peers per topic once. No. we should ask for our peers
-a few times a day. and just send in all our topics each time. but that should
-be handled by a layer above this. we have to plan it out.
-'''
-import json
-from time import sleep
-from typing import Union
-import datetime as dt
-import socket
-from satorilib.api.time import datetimeToString, now
-from satorilib.concepts import StreamId
-from satorilib.api.disk.disk import Disk
-from satorirendezvous.server.structs.message import ToServerMessage
-from satorirendezvous.server.structs.protocol import ToServerProtocol
+from satorilib import logging
+from satorirendezvous.client.structs.protocol import ToServerProtocol
 from satorirendezvous.client.connection import RendezvousConnection
-from satorirendezvous.peer.connection import Connection
-from satorirendezvous.peer.structs.message import PeerMessage
-from satorirendezvous.peer.structs.protocol import PeerProtocol
-
-
-class Channel():
-    ''' manages a single connection between two nodes over UDP '''
-
-    def __init__(self, streamId: StreamId, ip: str, port: int, localPort: int):
-        self.streamId = streamId
-        self.disk = Disk(self.streamId)
-        self.connection = Connection(
-            peerIp=ip,
-            peerPort=port,
-            port=localPort,
-            # todo: messageCallback= function to handle messages
-        )
-        self.messages: list[PeerMessage] = []
-        self.connect()
-
-    def add(self, message: bytes, sent: bool, time: dt.datetime = None):
-        self.messages.append(PeerMessage(sent, message, time))
-        self.messages = self.orderedMessages()
-
-    def orderedMessages(self):
-        ''' returns the messages ordered by PeerMessage.time '''
-        return sorted(self.messages, key=lambda msg: msg.time)
-
-    def connect(self):
-        self.connection.establish()
-
-    def isReady(self):
-        return (
-            len([
-                msg for msg in self.messages
-                if msg.isConfirmedReady() and msg.sent]) > 0 and
-            len([
-                msg for msg in self.messages
-                if msg.isConfirmedReady() and not msg.sent]) > 0)
-
-    def send(self, message: bytes):
-        self.connection.send(message)
-
-    def readies(self):
-        return [msg for msg in self.messages if msg.isReady()]
-
-    def requests(self):
-        return [msg for msg in self.messages if msg.isRequest()]
-
-    def responses(self):
-        return [msg for msg in self.messages if msg.isResponse()]
-
-    def myRequests(self):
-        return [msg for msg in self.requests() if msg.sent]
-
-    def theirResponses(self):
-        return [msg for msg in self.responses() if not msg.sent]
-
-    def mostRecentResponse(self, responses: list[PeerMessage] = None):
-        responses = responses or self.theirResponses()
-        if len(responses) == 0:
-            return None
-        return responses[-1]
-
-    def responseAfter(self, time: dt.datetime):
-        return [msg for msg in self.theirResponses() if msg.time > time]
-
-    def giveOneObservation(self, time: dt.datetime):
-        ''' 
-        returns the observation prior to the time of the most recent observation
-        '''
-        if isinstance(time, dt.datetime):
-            time = datetimeToString(time)
-        observation = self.disk.lastRowStringBefore(timestap=time)
-        if observation is None:
-            self.send(PeerProtocol.respondNoObservation())
-        else:
-            self.send(PeerProtocol.respondObservation(
-                time=observation[0],
-                data=observation[1]))
-
-
-class Topic():
-    ''' manages all our udp channels for a single topic '''
-
-    def __init__(self, streamId: StreamId, port: int):
-        self.streamId = streamId
-        self.channels: list[Channel] = []
-        # bind a port for this topic, each channel will get a peer port
-        self.port = port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind(('0.0.0.0', self.port))
-
-    def readyChannels(self) -> list[Channel]:
-        return [channel for channel in self.channels if channel.isReady()]
-
-    def create(self, ip: str, port: int, localPort: int):
-        print(f'CREATING: {ip}:{port},{localPort}')
-        self.add(Channel(self.streamId, ip, port, localPort))
-
-    def add(self, channel: Channel):
-        self.channels.append(channel)
-
-    def broadcast(self, msg: bytes):
-        for channel in self.readyChannels():
-            channel.send(msg)
-
-    def getOneObservation(self, time: dt.datetime):
-        ''' time is of the most recent observation '''
-        channels = self.readyChannels()
-        msg = PeerProtocol.requestObservationBefore(time)
-        sentTime = now()
-        for channel in channels:
-            channel.send(msg)
-        sleep(5)  # wait for responses, natural throttle
-        responses: list[Union[PeerMessage, None]] = [
-            channel.mostRecentResponse(channel.responseAfter(sentTime))
-            for channel in channels]
-        responseMessages = [
-            response.message for response in responses
-            if response is not None]
-        mostPopularResponseMessage = max(
-            responseMessages,
-            key=lambda response: len([
-                r for r in responseMessages if r == response]))
-        # here we could enforce a threshold, like super majority or something,
-        # by saying this message must make up at least 67% of the responses
-        # but I don't think it's necessary for now.
-        return mostPopularResponseMessage
+from satorirendezvous.peer.topic import Topic
+from satorirendezvous.client.structs.message import FromServerMessage
 
 
 class Peer():
-    ''' manages connection to the rendezvous server and all our udp topics '''
+    ''' manages connection to the rendezvous server '''
 
-    def __init__(self, streamIds: list[StreamId], signature: None, key: None):
-        '''
-        1. await - set up your connection to the rendezvous server
-        2. tell the rendezvous server which streams you want to connect to
-        3. for each set up a topic, and all the channels for that topic
-        '''
-        self.streamIds = self._mapStreamIds(streamIds or [
-            StreamId(
-                source='s',
-                stream='s1',
-                author='a',
-                target='t',),
-            StreamId(
-                source='s',
-                stream='s2',
-                author='a',
-                target='t',),
-        ])
+    def __init__(
+        self,
+        rendezvousHost: str,
+        rendezvousPort: int,
+        topics: list[str] = None,
+    ):
+        topics = topics or [ToServerProtocol.fullyConnectedKeyword]
+        self.topics: dict[str, Topic] = {k: Topic(k) for k in topics}
+        self.connect(rendezvousHost, rendezvousPort)
+
+    def connect(self, rendezvousHost: str, rendezvousPort: int):
         self.rendezvous: RendezvousConnection = RendezvousConnection(
-            signature=signature,
-            key=key,
-            host='161.35.238.159',
-            port=49152,
-            onMessage=self.handleRendezvousResponse,
-        )
-        # self.topics: dict[str, Topic] = {
-        #    topic: Topic(streamId)
-        #    for topic, streamId in self.streamIds
-        # }
-        self.topics: dict[str, Topic] = {}
-        self.rendezvous.establish()
-        self.sendTopics()
-        # for streamId in streamIds:
-        # add a new channel - this might be done elsewhere. or in a method.
+            host=rendezvousHost,
+            port=rendezvousPort,
+            timed=True,
+            onMessage=self.handleRendezvousMessage)
 
-    def _mapStreamIds(self, streamIds: list[StreamId]):
-        return {streamId.topic(): streamId for streamId in streamIds}
-
-    def handleRendezvousResponse(self, data: bytes, address: bytes):
-        ''' 
-        this is called when we receive a message from the rendezvous server
-        '''
-        print('received: ', data, address)
-        data = data.decode().split('|')
-        if data[0] == 'CONNECTION':
+    def handleRendezvousMessage(self, msg: FromServerMessage):
+        ''' receives all messages from the rendezvous server '''
+        if msg.isConnect():
             try:
-                print('data[1]')
-                print(data[1])
-                print('self.topics.keys()')
-                print(self.topics.keys())
-                self.topics.get(data[1]).create(
-                    ip=data[2],
-                    port=int(data[3]),
-                    localPort=int(data[4]))
+                topic = msg.payload.get('topic')
+                ip = msg.payload.get('peerIp')
+                port = int(msg.payload.get('peerPort'))
+                localPort = int(msg.payload.get('clientPort'))
+                if topic is not None and ip is not None:
+                    if topic in self.topics.keys():
+                        self.topics[topic].create(
+                            ip=ip,
+                            port=port,
+                            localPort=localPort)
+                    else:
+                        logging.error('topic not found', topic, print=True)
             except ValueError as e:
-                # logging.error('error parsing port', e)
-                print(e)
-
-    def sendTopics(self):
-        ''' 
-        this is called when we want to send our topics to the rendezvous server
-        '''
-        for topic, streamId in self.streamIds.items():
-            if topic not in self.topics:
-                self.topics[topic] = Topic(streamId)
-                self.rendezvous.send(
-                    cmd=ToServerProtocol.subscribePrefix(),
-                    msgs=[
-                        "signature doesn't matter during testing",
-                        json.dumps({
-                            **{'pubkey': 'wallet.pubkey'},
-                            # **(
-                            #    {
-                            #        'publisher': [topic]}
-                            # ),
-                            **(
-                                {
-                                    'subscriptions': [topic]
-                                }
-                            )})])
+                logging.error('error parsing message', e, print=True)

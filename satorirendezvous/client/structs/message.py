@@ -14,13 +14,26 @@ class FromServerMessage():
             if not ToClientProtocol.isValidCommand(data.split('|')[0]):
                 logging.warning('invalid command', data, print=True)
             else:
-                if command == ToClientProtocol.responsePrefix():
+                payload = None
+                msgId = None
+                if command == ToClientProtocol.responsePrefix:
                     msgId = int(parts[1])
-                    message = data.split('|')[2:]
-                elif command == ToClientProtocol.connectPrefix():
-                    msgId = None
-                    message = data.split('|')[1:]
-            return FromServerMessage(command, msgId, message)
+                    messages = data.split('|')[2:]
+                    if len(messages) == ToClientProtocol.responseSignature():
+                        payload = {
+                            k: v for k, v in zip(
+                                ToClientProtocol.responseSignature(),
+                                messages)}
+                        messages = None
+                elif command == ToClientProtocol.connectPrefix:
+                    messages = data.split('|')[1:]
+                    if len(messages) == ToClientProtocol.connectSignature():
+                        payload = {
+                            k: v for k, v in zip(
+                                ToClientProtocol.connectSignature(),
+                                messages)}
+                        messages = None
+            return FromServerMessage(command, msgId, messages, payload)
         except Exception as e:
             logging.error('fromBytes error: ', e, print=True)
             return FromServerMessage(raw=data)
@@ -30,12 +43,14 @@ class FromServerMessage():
         command: Union[str, None] = None,
         msgId: Union[int, None] = None,
         messages: Union[list[str], None] = None,
-        raw: bytes = None,
+        payload: Union[dict[str, str], None] = None,
+        raw: Union[bytes, None] = None,
     ):
         self.command = command
         self.msgId = msgId
         self.messages = messages
-        self.raw = raw
+        self.payload: dict = payload or {}
+        self.raw: Union[bytes, None] = raw
 
     @property
     def commandBytes(self):
@@ -43,8 +58,8 @@ class FromServerMessage():
 
     @property
     def isResponse(self):
-        return self.commandBytes == ToClientProtocol.responsePrefix()
+        return self.commandBytes == ToClientProtocol.responsePrefix
 
     @property
     def isConnect(self):
-        return self.commandBytes == ToClientProtocol.connectPrefix()
+        return self.commandBytes == ToClientProtocol.connectPrefix

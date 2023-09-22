@@ -18,10 +18,12 @@ class ClientConnect():
     break this up into smaller behaviors...)
     '''
 
-    def __init__(self, fullyConnected: bool = False):
+    def __init__(self, fullyConnected: bool = True):
         logging.info('starting rendezvous server...')
         # if fullyConnected is True, then all clients will connect to all
         # clients which is non-typical as it only works for small networks.
+        # however, it is the default because without any higher layers we have
+        # no way of knowing who should be connected to who.
         self.fullyConnected = fullyConnected
         self.portRange: set[int] = set(range(49153, 65536))
         self.clients: list[RendezvousClient] = []
@@ -51,7 +53,7 @@ class ClientConnect():
         ''' f'RESPONSE|{msgId}|{msg}' '''
         self.sock.sendto(
             ToClientProtocol.compile(
-                ToClientProtocol.responsePrefix(),
+                ToClientProtocol.responsePrefix,
                 msgId,
                 msg),
             address)
@@ -68,7 +70,7 @@ class ClientConnect():
         '''
         self.sock.sendto(
             ToClientProtocol.compile(
-                ToClientProtocol.connectPrefix(),
+                ToClientProtocol.connectPrefix,
                 topic, peer.ip, peer.portFor(topic), client.portFor(topic)),
             client.address)
 
@@ -97,11 +99,8 @@ class ClientConnect():
 
     ### connecting clients together ###
 
-    def _handleConnectToAll(
-        self,
-        rendezvousClient: RendezvousClient,
-    ):
-        topic = 'fullyConnected'
+    def _handleConnectToAll(self, rendezvousClient: RendezvousClient):
+        topic = ToServerProtocol.fullyConnectedKeyword
         clients = [client for client in self.clients if client !=
                    rendezvousClient]
         portsTaken = {client.portFor(topic) for client in clients}

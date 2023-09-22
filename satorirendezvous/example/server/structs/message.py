@@ -1,4 +1,4 @@
-from satorirendezvous.example.server.structs.protocol import ToServerSubscribeProtocol
+from satorirendezvous.example.client.structs.protocol import ToServerSubscribeProtocol
 from satorirendezvous.server.structs.message import ToServerMessage
 
 
@@ -35,4 +35,4 @@ class ToServerSubscribeMessage(ToServerMessage):
                     self.malformed = True
 
     def isSubscribe(self):
-        return self.commandBytes == ToServerSubscribeProtocol.subscribePrefix()
+        return self.commandBytes == ToServerSubscribeProtocol.subscribePrefix

@@ -9,7 +9,7 @@ class SubscribingClientConnect(ClientConnect):
     ''' add the ability to subscribe to topics to the server '''
 
     def __init__(self):
-        super().__init__()
+        super().__init__(fullyConnected=False)
         self.clientsBySubscription: dict[str, list[RendezvousClient]] = {}
 
     # override

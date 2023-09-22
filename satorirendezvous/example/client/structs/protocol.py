@@ -4,10 +4,7 @@ from satorirendezvous.client.structs.protocol import ToServerProtocol
 class ToServerSubscribeProtocol(ToServerProtocol):
     ''' addition of Subscribe to the protocol '''
 
-    @staticmethod
-    def subscribePrefix() -> bytes:
-        ''' SUBSCRIBE - the client is subscribing to one or more topics '''
-        return b'SUBSCRIBE'
+    subscribePrefix: bytes = b'SUBSCRIBE'
 
     @staticmethod
     def subscribe(signature: str, key: str) -> bytes:
@@ -16,12 +13,12 @@ class ToServerSubscribeProtocol(ToServerProtocol):
             signature = signature.encode()
         if isinstance(key, str):
             key = key.encode()
-        return ToServerSubscribeProtocol.subscribePrefix() + b'|' + signature + b'|' + key
+        return ToServerSubscribeProtocol.subscribePrefix + b'|' + signature + b'|' + key
 
     @staticmethod
     def prefixes():
         return [
-            ToServerSubscribeProtocol.checkinPrefix(),
-            ToServerSubscribeProtocol.portsPrefix(),
-            ToServerSubscribeProtocol.beatPrefix(),
-            ToServerSubscribeProtocol.subscribePrefix()]
+            ToServerSubscribeProtocol.checkinPrefix,
+            ToServerSubscribeProtocol.portsPrefix,
+            ToServerSubscribeProtocol.beatPrefix,
+            ToServerSubscribeProtocol.subscribePrefix]

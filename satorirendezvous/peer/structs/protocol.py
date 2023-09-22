@@ -24,25 +24,17 @@ from satorirendezvous.lib.protocol import Protocol
 
 class PeerProtocol(Protocol):
 
-    @staticmethod
-    def readyPrefix() -> bytes:
-        return b'READY'
-
-    @staticmethod
-    def requestPrefix() -> bytes:
-        return b'REQUEST'
-
-    @staticmethod
-    def respondPrefix() -> bytes:
-        return b'RESPOND'
+    readyPrefix: bytes = b'READY'
+    requestPrefix: bytes = b'REQUEST'
+    respondPrefix: bytes = b'RESPOND'
 
     @staticmethod
     def askReady() -> str:
-        return PeerProtocol.readyPrefix() + b'?'
+        return PeerProtocol.readyPrefix + b'?'
 
     @staticmethod
     def confirmReady() -> str:
-        return PeerProtocol.readyPrefix() + b'!'
+        return PeerProtocol.readyPrefix + b'!'
 
     @staticmethod
     def requestObservationBefore(time: dt.datetime) -> bytes:
@@ -50,7 +42,7 @@ class PeerProtocol(Protocol):
             time = datetimeToString(time)
         if isinstance(time, str):
             time = time.encode()
-        return PeerProtocol.requestPrefix() + b'|' + time
+        return PeerProtocol.requestPrefix + b'|' + time
 
     @staticmethod
     def respondObservation(time: dt.datetime, data: str) -> bytes:
@@ -60,18 +52,18 @@ class PeerProtocol(Protocol):
             time = datetimeToString(time)
         if isinstance(time, str):
             time = time.encode()
-        return PeerProtocol.respondPrefix() + b'|' + time + b'|' + data
+        return PeerProtocol.respondPrefix + b'|' + time + b'|' + data
 
     @staticmethod
     def respondNoObservation() -> bytes:
-        return PeerProtocol.respondPrefix() + b'|' + b'NONE|NONE'
+        return PeerProtocol.respondPrefix + b'|' + b'NONE|NONE'
 
     @staticmethod
     def prefixes():
         return [
-            PeerProtocol.readyPrefix(),
-            PeerProtocol.requestPrefix(),
-            PeerProtocol.respondPrefix()]
+            PeerProtocol.readyPrefix,
+            PeerProtocol.requestPrefix,
+            PeerProtocol.respondPrefix]
 
     @staticmethod
     def isValidCommand(cmd: bytes) -> bool:

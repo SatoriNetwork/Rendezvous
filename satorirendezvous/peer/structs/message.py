@@ -20,16 +20,16 @@ class PeerMessage():
 
     @property
     def isResponse(self):
-        return self.raw.startswith(PeerProtocol.respondPrefix())
+        return self.raw.startswith(PeerProtocol.respondPrefix)
 
     @property
     def isRequest(self):
-        return self.raw.startswith(PeerProtocol.requestPrefix())
+        return self.raw.startswith(PeerProtocol.requestPrefix)
 
     @property
     def isReady(self):
-        return self.raw.startswith(PeerProtocol.readyPrefix())
+        return self.raw.startswith(PeerProtocol.readyPrefix)
 
     @property
     def isBeat(self):
-        return self.raw.startswith(PeerProtocol.beatPrefix())
+        return self.raw.startswith(PeerProtocol.beatPrefix)

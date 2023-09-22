@@ -66,10 +66,10 @@ class ToServerMessage():
                 self.malformed = True
 
     def isCheckIn(self):
-        return self.commandBytes == ToServerProtocol.checkinPrefix()
+        return self.commandBytes == ToServerProtocol.checkinPrefix
 
     def isPortsTaken(self):
-        return self.commandBytes == ToServerProtocol.portsPrefix()
+        return self.commandBytes == ToServerProtocol.portsPrefix
 
     def isBeat(self):
-        return self.commandBytes == ToServerProtocol.beatPrefix()
+        return self.commandBytes == ToServerProtocol.beatPrefix
