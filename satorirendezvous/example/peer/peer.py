@@ -3,6 +3,8 @@ from satorirendezvous.example.client.structs.protocol import ToServerSubscribePr
 from satorirendezvous.example.client.connect import RendezvousAuthenticatedConnection
 from satorirendezvous.peer.peer import Peer
 
+# todo: update example stuff
+
 
 class AuthenticatedSubscribingPeer(Peer):
     ''' manages connection to the rendezvous server and all our udp topics '''

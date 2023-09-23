@@ -11,7 +11,14 @@ from satorirendezvous.peer.structs.protocol import PeerProtocol
 class Connection:
     ''' raw connection functionality '''
 
-    def __init__(self, topicSocket: socket.socket, port: int, peerPort: int, peerIp: str, onMessage=None):
+    def __init__(
+        self, 
+        topicSocket: socket.socket, 
+        port: int, 
+        peerPort: int, 
+        peerIp: str, 
+        onMessage=None
+    ):
         self.port = port
         self.peerIp = peerIp
         self.peerPort = peerPort
