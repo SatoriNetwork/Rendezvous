@@ -1,89 +1,60 @@
+import socket
 import datetime as dt
-from satorilib.api.time import datetimeToString
+from satorilib.api.time import now
+from satorirendezvous.lib.lock import LockableList
 from satorirendezvous.peer.connect import Connection
-from satorirendezvous.peer.structs.message import PeerMessage
-from satorirendezvous.peer.structs.protocol import PeerProtocol
+from satorirendezvous.peer.structs.message import PeerMessage, PeerMessages
 
 
 class Channel():
     ''' manages a single connection between two nodes over UDP '''
 
-    # todo:
-    # 0. remove custom logic
-    # 1. why must we filter down to ready channels?
-    # 2. why ever have ready channels?
-    # 3. why not have a callback for getOneObservation?
-    # 4. shouldn't every msg have a unique id?
-    # 5. if we had a unique id on messages we could match them to a request.
-
-    def __init__(self, topic: str, ip: str, port: int, localPort: int):
+    def __init__(
+        self,
+        topic: str,
+        ip: str,
+        port: int,
+        localPort: int,
+        topicSocket: socket.socket
+    ):
         self.topic = topic
-        self.messages: list[PeerMessage] = []
+        self.messages: PeerMessages = PeerMessages([])
         self.connection = Connection(
+            topicSocket=topicSocket,
             peerIp=ip,
             peerPort=port,
             port=localPort,
-            # todo: messageCallback= function to handle messages
-        )
-        self.connect()
-
-    def add(self, message: bytes, sent: bool, time: dt.datetime = None):
-        self.messages.append(PeerMessage(sent, message, time))
-        self.messages = self.orderedMessages()
-
-    def orderedMessages(self):
-        ''' returns the messages ordered by PeerMessage.time '''
-        return sorted(self.messages, key=lambda msg: msg.time)
-
-    def connect(self):
+            onMessage=self.add)
         self.connection.establish()
 
-    def isReady(self):
-        return (
-            len([
-                msg for msg in self.messages
-                if msg.isConfirmedReady() and msg.sent]) > 0 and
-            len([
-                msg for msg in self.messages
-                if msg.isConfirmedReady() and not msg.sent]) > 0)
+    def send(self, cmd: str, msgs: list[str] = None):
+        self.connection.send(cmd, msgs)
 
-    def send(self, message: bytes):
-        self.connection.send(message)
+    def add(
+        self,
+        message: bytes,
+        sent: bool,
+        time: dt.datetime = None,
+        **kwargs
+    ):
+        with self.messages:
+            self.messages.append(PeerMessage(
+                sent=sent, raw=message, time=time))
 
-    def readies(self):
-        return [msg for msg in self.messages if msg.isReady()]
+    def orderedMessages(self):
+        ''' most recent last messages by PeerMessage.time '''
+        with self.messages:
+            return sorted(self.messages, key=lambda msg: msg.time)
 
-    def requests(self):
-        return [msg for msg in self.messages if msg.isRequest()]
+    def messagesAfter(self, time: dt.datetime):
+        with self.messages:
+            return [msg for msg in self.messages if msg.time > time]
 
-    def responses(self):
-        return [msg for msg in self.messages if msg.isResponse()]
 
-    def myRequests(self):
-        return [msg for msg in self.requests() if msg.sent]
-
-    def theirResponses(self):
-        return [msg for msg in self.responses() if not msg.sent]
-
-    def mostRecentResponse(self, responses: list[PeerMessage] = None):
-        responses = responses or self.theirResponses()
-        if len(responses) == 0:
-            return None
-        return responses[-1]
-
-    def responseAfter(self, time: dt.datetime):
-        return [msg for msg in self.theirResponses() if msg.time > time]
-
-    def giveOneObservation(self, time: dt.datetime):
-        ''' 
-        returns the observation prior to the time of the most recent observation
-        '''
-        if isinstance(time, dt.datetime):
-            time = datetimeToString(time)
-        observation = 'self.disk.lastRowStringBefore(timestap=time)'
-        if observation is None:
-            self.send(PeerProtocol.respondNoObservation())
-        else:
-            self.send(PeerProtocol.respondObservation(
-                time=observation[0],
-                data=observation[1]))
+class Channels(LockableList[Channel]):
+    '''
+    iterating over this list within a context manager is thread safe, example: 
+        with channels:
+            for channel in channels:
+                channel.send(msg)
+    '''

@@ -26,8 +26,8 @@ class AuthenticatedSubscribingPeer(Peer):
         self.rendezvous: RendezvousAuthenticatedConnection = RendezvousAuthenticatedConnection(
             signature=self.signature,
             key=self.key,
-            host=rendezvousHost,  # '161.35.238.159',
-            port=rendezvousPort,  # 49152,
+            host=rendezvousHost,
+            port=rendezvousPort,
             onMessage=self.handleRendezvousMessage)
 
     def sendTopics(self):

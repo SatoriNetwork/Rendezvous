@@ -1,7 +1,5 @@
 class Protocol():
-    '''
-    basic functionality for protocols
-    '''
+    ''' basic functionality for protocols '''
 
     @staticmethod
     def toBytes(msg: str) -> bytes:

@@ -24,10 +24,10 @@ class RendezvousConnection():
         self.sock.bind(('0.0.0.0', port))
         self.rendezvousServer = (host, port)
         self.onMessage = onMessage or self.display
+        self.timed = timed
+        self.listen = True
         self.inbox = []
         self.outbox = {}
-        self.listen = True
-        self.timed = timed
         self.establish()
 
     def display(self, msg, addr):
@@ -74,7 +74,7 @@ class RendezvousConnection():
             return
         try:
             payload = ToServerProtocol.compile([
-                x for x in [cmd, str(self.msgId), *msgs]
+                x for x in [cmd, str(self.msgId), *(msgs or [])]
                 if isinstance(x, int) or (x is not None and len(x) > 0)])
             self.outbox[self.msgId] = payload
         except Exception as e:

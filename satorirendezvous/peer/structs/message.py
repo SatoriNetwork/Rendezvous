@@ -1,5 +1,6 @@
 import datetime as dt
 from satorilib.api.time import now
+from satorirendezvous.lib.lock import LockableList
 from satorirendezvous.peer.structs.protocol import PeerProtocol
 
 
@@ -15,21 +16,14 @@ class PeerMessage():
         return self.raw.decode()
 
     @property
-    def isConfirmedReady(self):
-        return self.raw == PeerProtocol.confirmReady()
+    def isPing(self):
+        return self.raw.startswith(PeerProtocol.pingPrefix)
 
-    @property
-    def isResponse(self):
-        return self.raw.startswith(PeerProtocol.respondPrefix)
 
-    @property
-    def isRequest(self):
-        return self.raw.startswith(PeerProtocol.requestPrefix)
-
-    @property
-    def isReady(self):
-        return self.raw.startswith(PeerProtocol.readyPrefix)
-
-    @property
-    def isBeat(self):
-        return self.raw.startswith(PeerProtocol.beatPrefix)
+class PeerMessages(LockableList[PeerMessage]):
+    '''
+    iterating over this list within a context manager is thread safe, example: 
+        with messages:
+            for message in messages:
+                message.read()
+    '''
