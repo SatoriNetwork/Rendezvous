@@ -1,3 +1,5 @@
+import time
+import threading
 from satorilib import logging
 from satorirendezvous.client.structs.protocol import ToServerProtocol
 from satorirendezvous.client.connection import RendezvousConnection
@@ -13,10 +15,24 @@ class Peer():
         rendezvousHost: str,
         rendezvousPort: int,
         topics: list[str] = None,
+        handlePeriodicCheckin: bool = True,
+        periodicCheckinSeconds: int = 60*60*1
     ):
         topics = topics or [ToServerProtocol.fullyConnectedKeyword]
         self.topics: Topics = Topics({k: Topic(k) for k in topics})
         self.connect(rendezvousHost, rendezvousPort)
+        if handlePeriodicCheckin:
+            self.periodicCheckinSeconds = periodicCheckinSeconds
+            self.periodicCheckin()
+
+    def periodicCheckin(self):
+        self.checker = threading.Thread(target=self.checker, daemon=True)
+        self.checker.start()
+
+    def checkin(self):
+        while True:
+            time.sleep(self.periodicCheckinSeconds)
+            self.rendezvous.establish()
 
     def connect(self, rendezvousHost: str, rendezvousPort: int):
         self.rendezvous: RendezvousConnection = RendezvousConnection(
