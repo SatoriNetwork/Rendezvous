@@ -2,6 +2,7 @@ import time
 from satorilib import logging
 from satorirendezvous.server.behaviors.connect import ClientConnect
 from satorirendezvous.server.structs.client import RendezvousClient
+from satorirendezvous.example.server.structs.client import RendezvousClientsBySubscription
 from satorirendezvous.example.server.structs.message import ToServerSubscribeMessage
 
 
@@ -10,7 +11,22 @@ class SubscribingClientConnect(ClientConnect):
 
     def __init__(self):
         super().__init__(fullyConnected=False)
-        self.clientsBySubscription: dict[str, list[RendezvousClient]] = {}
+        self.clientsBySubscription: RendezvousClientsBySubscription = (
+            RendezvousClientsBySubscription({}))
+
+    # override
+    def purge(self):
+        while True:
+            lastPurge = time.time()
+            time.sleep(60*60*24)
+            with self.clients:
+                self.clients = [
+                    client for client in self.clients
+                    if client.lastSeen > lastPurge]
+            with self.clientsBySubscription:
+                self.clientsBySubscription = {
+                    k: [client for client in v if client.lastSeen > lastPurge]
+                    for k, v in self.clientsBySubscription.items()}
 
     # override
     def routeMessage(

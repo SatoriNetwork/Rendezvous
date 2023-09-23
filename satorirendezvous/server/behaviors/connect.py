@@ -1,11 +1,13 @@
+import time
 import socket
 import queue
+import threading
 from satorilib import logging
 from satorilib.concepts import TwoWayDictionary
 from satorirendezvous.client.structs.protocol import ToServerProtocol
 from satorirendezvous.server.structs.protocol import ToClientProtocol
 from satorirendezvous.server.structs.message import ToServerMessage
-from satorirendezvous.server.structs.client import RendezvousClient
+from satorirendezvous.server.structs.client import RendezvousClient, RendezvousClients
 logging.setup(file='/tmp/rendezvous.log')
 
 
@@ -26,7 +28,21 @@ class ClientConnect():
         # no way of knowing who should be connected to who.
         self.fullyConnected = fullyConnected
         self.portRange: set[int] = set(range(49153, 65536))
-        self.clients: list[RendezvousClient] = []
+        self.clients: RendezvousClients = RendezvousClients([])
+        self.periodicPurge()
+
+    def periodicPurge(self):
+        self.purger = threading.Thread(target=self.purge, daemon=True)
+        self.purger.start()
+
+    def purge(self):
+        while True:
+            lastPurge = time.time()
+            time.sleep(60*60*24)
+            with self.clients:
+                self.clients = [
+                    client for client in self.clients
+                    if client.lastSeen > lastPurge]
 
     def setSockQueue(self, sock: socket.socket, queue: queue.Queue):
         ''' must set the sock and queue before calling router '''
@@ -37,15 +53,17 @@ class ClientConnect():
 
     def findClient(self, ip: str, port: int):
         try:
-            return [
+            clients = [
                 client for client in self.clients
-                if client.ip == ip and port == port][0]
+                if client.ip == ip and port == port]
+            if len(clients) > 0:
+                return clients[0]
         except Exception as e:
             logging.error((
                 'unable to find client for ports, they did not checkin '
                 'first... they are not a client.'),
                 e)
-            return None
+        return None
 
     ### using socket ###
 
@@ -101,8 +119,9 @@ class ClientConnect():
 
     def _handleConnectToAll(self, rendezvousClient: RendezvousClient):
         topic = ToServerProtocol.fullyConnectedKeyword
-        clients = [client for client in self.clients if client !=
-                   rendezvousClient]
+        clients = [
+            client for client in self.clients
+            if client != rendezvousClient]
         portsTaken = {client.portFor(topic) for client in clients}
         availablePorts = self.portRange - portsTaken
         chosenPort = rendezvousClient.randomAvailablePort(availablePorts)
@@ -123,7 +142,8 @@ class ClientConnect():
             address=msg.address,
             ip=msg.ip,
             port=msg.port)
-        self.clients.append(rendezvousClient)
+        with self.clients:
+            self.clients.append(rendezvousClient)
         self.respond(
             address=msg.address,
             msgId=msg.msgId,
@@ -145,7 +165,6 @@ class ClientConnect():
         # there is no real need to respond - we just send 3 per 5 minutes
         # anyway in case there is the occasional lost packet. however, the
         # client will skip 1 beat if it receives a beat from the server.
-        logging.debug('_handleBeat')
         self.respond(
             address=rendezvousClient.msg.address,
             msgId=rendezvousClient.msg.msgId,
@@ -165,18 +184,17 @@ class ClientConnect():
         logging.info('starting rendezvous worker...')
         while True:
             data, address = self.queue.get()
-            logging.debug(f'connection from: {address} with: {data}')
             msg = ToServerMessage.fromBytes(data, *address)
             if msg.isCheckIn():
-                rendezvousClient = self._handleCheckIn(msg)
+                rendezvousClient = self.findClient(ip=msg.ip, port=msg.port)
+                if rendezvousClient is None:
+                    rendezvousClient = self._handleCheckIn(msg)
+                else:
+                    rendezvousClient.addMsg(msg)
                 if self.fullyConnected:
                     self._handleConnectToAll(rendezvousClient)
             else:
-                logging.debug('else')
                 rendezvousClient = self.findClient(ip=msg.ip, port=msg.port)
-                logging.debug('client:', rendezvousClient)
-                logging.debug('msgtype:', msg.isPortsTaken(),
-                              msg.isSubscribe(), msg.isBeat())
                 if rendezvousClient is None:
                     self.respond(
                         address=msg.address,

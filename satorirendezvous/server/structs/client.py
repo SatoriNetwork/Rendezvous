@@ -1,6 +1,7 @@
 import random
 import time
 from satorilib.concepts import TwoWayDictionary
+from satorirendezvous.lib.lock import LockableList
 from satorirendezvous.server.structs.message import ToServerMessage
 
 
@@ -26,6 +27,7 @@ class RendezvousClient:
         self.seen()
 
     def addMsg(self, msg: ToServerMessage):
+        self.seen()
         self.msgs.append(msg)
 
     def seen(self):
@@ -64,3 +66,7 @@ class RendezvousClient:
                     'unable to find an available port in the range: '
                     f'{portRange}')
         return port
+
+
+class RendezvousClients(LockableList[RendezvousClient]):
+    ''' iterating over this list within a context manager is thread safe '''

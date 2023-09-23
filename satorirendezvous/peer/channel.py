@@ -1,6 +1,5 @@
 import socket
 import datetime as dt
-from satorilib.api.time import now
 from satorirendezvous.lib.lock import LockableList
 from satorirendezvous.peer.connect import Connection
 from satorirendezvous.peer.structs.message import PeerMessage, PeerMessages
@@ -43,18 +42,15 @@ class Channel():
 
     def orderedMessages(self):
         ''' most recent last messages by PeerMessage.time '''
-        with self.messages:
-            return sorted(self.messages, key=lambda msg: msg.time)
+        return sorted(self.messages, key=lambda msg: msg.time)
 
     def messagesAfter(self, time: dt.datetime):
-        with self.messages:
-            return [msg for msg in self.messages if msg.time > time]
+        return [msg for msg in self.messages if msg.time > time]
 
 
 class Channels(LockableList[Channel]):
     '''
     iterating over this list within a context manager is thread safe, example: 
         with channels:
-            for channel in channels:
-                channel.send(msg)
+            channels.append(channel)
     '''

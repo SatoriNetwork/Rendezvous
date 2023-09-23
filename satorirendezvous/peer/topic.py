@@ -32,9 +32,8 @@ class Topic():
                 topicSocket=self.sock))
 
     def broadcast(self, cmd: str, msgs: list[str] = None):
-        with self.channels:
-            for channel in self.channels:
-                channel.send(cmd, msgs)
+        for channel in self.channels:
+            channel.send(cmd, msgs)
 
 
 class Topics(LockableDict[str, Topic]):
