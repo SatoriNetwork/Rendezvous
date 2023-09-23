@@ -42,7 +42,12 @@ class Peer():
             onMessage=self.handleRendezvousMessage)
 
     def add(self, topic: str):
-        self.topics[topic] = Topic(topic)
+        with self.topics:
+            self.topics[topic] = Topic(topic)
+
+    def remove(self, topic: str):
+        with self.topics:
+            del (self.topics[topic])
 
     def handleRendezvousMessage(self, msg: FromServerMessage):
         ''' receives all messages from the rendezvous server '''
