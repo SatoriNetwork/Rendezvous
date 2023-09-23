@@ -1,12 +1,14 @@
 import json
+import time
 from satorirendezvous.example.client.structs.protocol import ToServerSubscribeProtocol
-from satorirendezvous.example.client.connect import RendezvousAuthenticatedConnection
 from satorirendezvous.peer.peer import Peer
 
 # todo: update example stuff
+# this version should just be subscribing, we should do authentication in our
+# project
 
 
-class AuthenticatedSubscribingPeer(Peer):
+class SubscribingPeer(Peer):
     ''' manages connection to the rendezvous server and all our udp topics '''
 
     def __init__(
@@ -14,39 +16,44 @@ class AuthenticatedSubscribingPeer(Peer):
         rendezvousHost: str,
         rendezvousPort: int,
         topics: list[str] = None,
-        signature: str = None,
-        key: str = None,
+        handlePeriodicCheckin: bool = True,
+        periodicCheckinSeconds: int = 60*60*1,
     ):
-        self.signature = signature
-        self.key = key
         super().__init__(
             rendezvousHost=rendezvousHost,
             rendezvousPort=rendezvousPort,
-            topics=topics)
+            topics=topics,
+            handlePeriodicCheckin=handlePeriodicCheckin,
+            periodicCheckinSeconds=periodicCheckinSeconds)
 
-    def connect(self, rendezvousHost: str, rendezvousPort: int):
-        self.rendezvous: RendezvousAuthenticatedConnection = RendezvousAuthenticatedConnection(
-            signature=self.signature,
-            key=self.key,
-            host=rendezvousHost,
-            port=rendezvousPort,
-            onMessage=self.handleRendezvousMessage)
+    # override
+    def checkin(self):
+        while True:
+            for topic in self.topics.keys():
+                time.sleep(self.periodicCheckinSeconds)
+                self.rendezvous.establish()
+                # todo: do we have to fully establish a connetion or just send
+                # a checkin message? well we have to establish a new listener
+                # anyway
+                self.sendTopic(topic)
 
     def sendTopics(self):
         ''' send our topics to the rendezvous server to get peer lists '''
         for topic in self.topics.keys():
-            self.rendezvous.send(
-                cmd=ToServerSubscribeProtocol.subscribePrefix,
-                msgs=[
-                    "signature doesn't matter during testing",
-                    json.dumps({
-                        **{'pubkey': 'wallet.pubkey'},
-                        # **(
-                        #    {
-                        #        'publisher': [topic]}
-                        # ),
-                        **(
-                            {
-                                'subscriptions': [topic]
-                            }
-                        )})])
+            self.sendTopic(topic)
+
+    def sendTopic(self, topic: str):
+        self.rendezvous.send(
+            cmd=ToServerSubscribeProtocol.subscribePrefix,
+            msgs=[
+                json.dumps({
+                    **{'pubkey': 'wallet.pubkey'},
+                    **(
+                        {
+                            'publisher': [topic]}
+                    ),
+                    **(
+                        {
+                            'subscriptions': [topic]
+                        }
+                    )})])

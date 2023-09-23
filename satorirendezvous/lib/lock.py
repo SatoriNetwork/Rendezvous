@@ -1,3 +1,8 @@
+'''
+please note, because of the GIL we don't even need locks as long as we're only
+using threads for concurrency. However, in the event that we do want to use
+multiprocessing we can take advantage of these locking mechanisms.
+'''
 import threading
 from typing import TypeVar, Generic, List, Dict
 

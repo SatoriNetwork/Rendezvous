@@ -16,7 +16,7 @@ class Peer():
         rendezvousPort: int,
         topics: list[str] = None,
         handlePeriodicCheckin: bool = True,
-        periodicCheckinSeconds: int = 60*60*1
+        periodicCheckinSeconds: int = 60*60*1,
     ):
         topics = topics or [ToServerProtocol.fullyConnectedKeyword]
         self.topics: Topics = Topics({k: Topic(k) for k in topics})
@@ -33,6 +33,8 @@ class Peer():
         while True:
             time.sleep(self.periodicCheckinSeconds)
             self.rendezvous.establish()
+            # todo: do we have to fully establish a connetion or just send
+            # a checkin message? well we have to establish a new listener anyway
 
     def connect(self, rendezvousHost: str, rendezvousPort: int):
         self.rendezvous: RendezvousConnection = RendezvousConnection(
