@@ -18,12 +18,14 @@ class Peer():
         handlePeriodicCheckin: bool = True,
         periodicCheckinSeconds: int = 60*60*1,
     ):
-        topics = topics or [ToServerProtocol.fullyConnectedKeyword]
-        self.topics: Topics = Topics({k: Topic(k) for k in topics})
+        self.createTopics(topics or [ToServerProtocol.fullyConnectedKeyword])
         self.connect(rendezvousHost, rendezvousPort)
         if handlePeriodicCheckin:
             self.periodicCheckinSeconds = periodicCheckinSeconds
             self.periodicCheckin()
+
+    def createTopics(self, topics: list[str]):
+        self.topics: Topics = Topics({k: Topic(k) for k in topics})
 
     def periodicCheckin(self):
         self.checker = threading.Thread(target=self.checker, daemon=True)

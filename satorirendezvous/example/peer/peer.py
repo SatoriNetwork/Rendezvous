@@ -3,10 +3,6 @@ import time
 from satorirendezvous.example.client.structs.protocol import ToServerSubscribeProtocol
 from satorirendezvous.peer.peer import Peer
 
-# todo: update example stuff
-# this version should just be subscribing, we should do authentication in our
-# project
-
 
 class SubscribingPeer(Peer):
     ''' manages connection to the rendezvous server and all our udp topics '''
