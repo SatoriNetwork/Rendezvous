@@ -52,6 +52,24 @@ class ToServerMessage():
         self.signature = ToServerProtocol.toStr(self.signatureBytes)
         self.key = ToServerProtocol.toStr(self.keyBytes)
 
+    def __str__(self) -> str:
+        return ('ToServerMessage('
+                f'malformed:{self.malformed},'
+                f'ip:{self.ip},'
+                f'port:{self.port},'
+                f'sent:{self.sent},'
+                f'commandBytes:{self.commandBytes},'
+                f'msgIdBytes:{self.msgIdBytes},'
+                f'messageBytes:{self.messageBytes},'
+                f'portsTaken:{self.portsTaken},'
+                f'signatureBytes:{self.signatureBytes},'
+                f'keyBytes:{self.keyBytes},'
+                f'command:{self.command},'
+                f'msgId:{self.msgId},'
+                f'message:{self.message},'
+                f'signature:{self.signature},'
+                f'key:{self.key})')
+
     @property
     def address(self):
         return (self.ip, self.port)
@@ -65,11 +83,11 @@ class ToServerMessage():
                 self.portsTaken = TwoWayDictionary()
                 self.malformed = True
 
-    def isCheckIn(self):
-        return self.commandBytes == ToServerProtocol.checkinPrefix
+    def isCheckIn(self, override: bytes = None):
+        return (override or self.commandBytes) == ToServerProtocol.checkinPrefix
 
-    def isPortsTaken(self):
-        return self.commandBytes == ToServerProtocol.portsPrefix
+    def isPortsTaken(self, override: bytes = None):
+        return (override or self.commandBytes) == ToServerProtocol.portsPrefix
 
-    def isBeat(self):
-        return self.commandBytes == ToServerProtocol.beatPrefix
+    def isBeat(self, override: bytes = None):
+        return (override or self.commandBytes) == ToServerProtocol.beatPrefix

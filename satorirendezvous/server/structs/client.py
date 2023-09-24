@@ -26,6 +26,9 @@ class RendezvousClient:
         self.msgs: list[ToServerMessage] = []
         self.seen()
 
+    def __str__(self) -> str:
+        return f'RendezvousClient({self.address}, {len(self.msgs)})'
+
     def addMsg(self, msg: ToServerMessage):
         self.seen()
         self.msgs.append(msg)

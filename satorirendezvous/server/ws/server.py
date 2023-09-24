@@ -16,7 +16,8 @@ class RendezvousServer:
         self.sock.bind(('0.0.0.0', port))
         self.queue = queue.Queue()
         self.behavior = behavior or ClientConnect()
-        self.behavior.setSockQueue(self.sock, self.queue)
+        self.behavior.setSock(self.sock)
+        self.behavior.setQueue(self.queue)
         self.worker = threading.Thread(target=behavior.router)
         self.worker.start()
 

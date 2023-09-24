@@ -44,9 +44,12 @@ class ClientConnect():
                     client for client in self.clients
                     if client.lastSeen > lastPurge]
 
-    def setSockQueue(self, sock: socket.socket, queue: queue.Queue):
+    def setSock(self, sock: socket.socket):
         ''' must set the sock and queue before calling router '''
         self.sock = sock
+
+    def setQueue(self, queue: queue.Queue):
+        ''' must set the sock and queue before calling router '''
         self.queue = queue
 
     ### finding client ###
@@ -176,8 +179,7 @@ class ClientConnect():
         rendezvousClient: RendezvousClient,  # keep
     ):
         ''' this is meant to be overridden if custom behavior is added '''
-
-        pass
+        return f'unable to route message {str(msg)}, {str(rendezvousClient)}'
 
     def router(self):
         ''' routes all messages to the appropriate handler '''
