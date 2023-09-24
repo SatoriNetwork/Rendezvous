@@ -4,7 +4,7 @@ from satorirendezvous.client.structs.message import FromServerMessage
 from satorirendezvous.client.structs.protocol import ToServerProtocol
 
 
-class RendezvousConnection():
+class RendezvousByRest():
     ''' conn for restful server '''
 
     def __init__(

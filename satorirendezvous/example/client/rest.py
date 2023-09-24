@@ -1,8 +1,8 @@
-from satorirendezvous.client.rest import RendezvousConnection
+from satorirendezvous.client.rest import RendezvousByRest
 from satorirendezvous.client.structs.protocol import ToServerProtocol
 
 
-class RendezvousAuthenticatedConnection(RendezvousConnection):
+class RendezvousByRestAuthenticated(RendezvousByRest):
     ''' conn for server, using signature and key for identity  '''
 
     def __init__(

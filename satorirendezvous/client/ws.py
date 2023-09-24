@@ -6,7 +6,7 @@ from satorirendezvous.client.structs.message import FromServerMessage
 from satorirendezvous.client.structs.protocol import ToServerProtocol
 
 
-class RendezvousConnection():
+class RendezvousByWebsocket():
     ''' conn for server '''
 
     def __init__(

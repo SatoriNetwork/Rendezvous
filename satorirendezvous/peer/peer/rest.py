@@ -2,7 +2,7 @@ import time
 import threading
 from satorilib import logging
 from satorirendezvous.client.structs.protocol import ToServerProtocol
-from satorirendezvous.client.ws import RendezvousConnection
+from satorirendezvous.client.rest import RendezvousByRest
 from satorirendezvous.peer.p2p.topic import Topic, Topics
 from satorirendezvous.client.structs.message import FromServerMessage
 
@@ -34,12 +34,10 @@ class Peer():
     def checkin(self):
         while True:
             time.sleep(self.periodicCheckinSeconds)
-            self.rendezvous.establish()
-            # todo: do we have to fully establish a connetion or just send
-            # a checkin message? well we have to establish a new listener anyway
+            self.rendezvous.checkin()
 
     def connect(self, rendezvousHost: str, rendezvousPort: int):
-        self.rendezvous: RendezvousConnection = RendezvousConnection(
+        self.rendezvous: RendezvousByRest = RendezvousByRest(
             host=rendezvousHost,
             port=rendezvousPort,
             timed=True,

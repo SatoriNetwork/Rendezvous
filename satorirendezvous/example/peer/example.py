@@ -1,4 +1,4 @@
-from satorirendezvous.example.peer.peer import AuthenticatedSubscribingPeer
+from satorirendezvous.example.peer.ws import AuthenticatedSubscribingPeer
 
 from satorirendezvous.example.server.behaviors.subscribe import SubscribingClientConnect
 

@@ -2,7 +2,7 @@ import time
 import threading
 from satorilib import logging
 from satorirendezvous.client.structs.protocol import ToServerProtocol
-from satorirendezvous.client.ws import RendezvousConnection
+from satorirendezvous.client.ws import RendezvousByWebsocket
 from satorirendezvous.peer.p2p.topic import Topic, Topics
 from satorirendezvous.client.structs.message import FromServerMessage
 
@@ -39,7 +39,7 @@ class Peer():
             # a checkin message? well we have to establish a new listener anyway
 
     def connect(self, rendezvousHost: str, rendezvousPort: int):
-        self.rendezvous: RendezvousConnection = RendezvousConnection(
+        self.rendezvous: RendezvousByWebsocket = RendezvousByWebsocket(
             host=rendezvousHost,
             port=rendezvousPort,
             timed=True,
