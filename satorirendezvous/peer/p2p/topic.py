@@ -3,7 +3,7 @@ import socket
 import threading
 from satorilib.api.time import now
 from satorirendezvous.lib.lock import LockableDict
-from satorirendezvous.peer.channel import Channel, Channels
+from satorirendezvous.peer.p2p.channel import Channel, Channels
 
 
 class Topic():

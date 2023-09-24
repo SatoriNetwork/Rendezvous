@@ -1,6 +1,4 @@
-import time
 import requests
-import threading
 from satorilib import logging
 from satorirendezvous.client.structs.message import FromServerMessage
 from satorirendezvous.client.structs.protocol import ToServerProtocol

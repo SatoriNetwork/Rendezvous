@@ -1,7 +1,7 @@
 import json
 import time
 from satorirendezvous.example.client.structs.protocol import ToServerSubscribeProtocol
-from satorirendezvous.peer.peer import Peer
+from satorirendezvous.peer.peer.ws import Peer
 
 
 class SubscribingPeer(Peer):

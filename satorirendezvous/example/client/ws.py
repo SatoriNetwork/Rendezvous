@@ -1,4 +1,4 @@
-from satorirendezvous.client.connection import RendezvousConnection
+from satorirendezvous.client.ws import RendezvousConnection
 from satorirendezvous.client.structs.protocol import ToServerProtocol
 
 

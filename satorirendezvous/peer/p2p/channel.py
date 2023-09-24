@@ -1,7 +1,7 @@
 import socket
 import datetime as dt
 from satorirendezvous.lib.lock import LockableList
-from satorirendezvous.peer.connect import Connection
+from satorirendezvous.peer.p2p.connect import Connection
 from satorirendezvous.peer.structs.message import PeerMessage, PeerMessages
 
 

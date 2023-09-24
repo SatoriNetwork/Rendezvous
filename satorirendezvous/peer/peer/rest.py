@@ -2,8 +2,8 @@ import time
 import threading
 from satorilib import logging
 from satorirendezvous.client.structs.protocol import ToServerProtocol
-from satorirendezvous.client.connection import RendezvousConnection
-from satorirendezvous.peer.topic import Topic, Topics
+from satorirendezvous.client.ws import RendezvousConnection
+from satorirendezvous.peer.p2p.topic import Topic, Topics
 from satorirendezvous.client.structs.message import FromServerMessage
 
 
