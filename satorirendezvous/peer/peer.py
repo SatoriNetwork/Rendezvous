@@ -60,12 +60,13 @@ class Peer():
                 port = int(msg.payload.get('peerPort'))
                 localPort = int(msg.payload.get('clientPort'))
                 if topic is not None and ip is not None:
-                    if topic in self.topics.keys():
-                        self.topics[topic].create(
-                            ip=ip,
-                            port=port,
-                            localPort=localPort)
-                    else:
-                        logging.error('topic not found', topic, print=True)
+                    with self.topics:
+                        if topic in self.topics.keys():
+                            self.topics[topic].create(
+                                ip=ip,
+                                port=port,
+                                localPort=localPort)
+                        else:
+                            logging.error('topic not found', topic, print=True)
             except ValueError as e:
                 logging.error('error parsing message', e, print=True)
