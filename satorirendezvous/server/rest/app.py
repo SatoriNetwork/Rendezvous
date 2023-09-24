@@ -4,8 +4,9 @@
 # run with:
 # sudo nohup /app/anaconda3/bin/python app.py > /dev/null 2>&1 &
 
+import threading
 import json
-from flask import Flask, redirect, jsonify, request
+from flask import Flask, redirect, request, g
 from waitress import serve
 import secrets
 import os
@@ -22,7 +23,18 @@ debug = True
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
 DEVMODE = os.getenv('APPDATA') is not None
-conn = ClientConnect(fullyConnected=True)
+connLock = threading.Lock()
+
+def getConn():
+    if not hasattr(g, 'conn'):
+        g.conn = ClientConnect(fullyConnected=True)
+    return g.conn
+
+
+def useConn(data: bytes, ip: str):
+    conn = getConn()
+    with connLock:
+        return conn.router(data, (ip, 80))
 
 ###############################################################################
 ## Flask Hooks ################################################################
@@ -86,7 +98,7 @@ def raw(ip=None):
         return "Request payload missing", 400
     if request.content_length > 10 * 1024:  # 10 kb or 0.01024 MB
         return "Request payload is too large", 413
-    return json.dumps({'response': conn.router(request.get_data(), (ip, 80))}), 200
+    return json.dumps({'response': useConn(request.get_data(), ip)}), 200
 
 ###############################################################################
 ## Entry ######################################################################
