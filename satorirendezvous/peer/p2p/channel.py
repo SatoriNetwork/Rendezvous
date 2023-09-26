@@ -14,16 +14,18 @@ class Channel():
         ip: str,
         port: int,
         localPort: int,
-        topicSocket: socket.socket
+        topicSocket: socket.socket,
     ):
         self.topic = topic
-        self.messages: PeerMessages = PeerMessages([])
-        self.connection = Connection(
-            topicSocket=topicSocket,
-            peerIp=ip,
-            peerPort=port,
-            port=localPort,
-            onMessage=self.add)
+        self.messages: PeerMessages = (
+            self.messages if hasattr(self, 'messages') else PeerMessages([]))
+        self.connection = (
+            self.connection if hasattr(self, 'connection') else Connection(
+                topicSocket=topicSocket,
+                peerIp=ip,
+                peerPort=port,
+                port=localPort,
+                onMessage=self.add))
         self.connection.establish()
 
     def send(self, cmd: str, msgs: list[str] = None):
@@ -46,6 +48,11 @@ class Channel():
 
     def messagesAfter(self, time: dt.datetime):
         return [msg for msg in self.messages if msg.time > time]
+
+    def receivedAfter(self, time: dt.datetime):
+        return [
+            msg for msg in self.messages
+            if msg.time > time and not msg.sent]
 
 
 class Channels(LockableList[Channel]):

@@ -10,14 +10,12 @@ class SubscribingPeer(Peer):
     def __init__(
         self,
         rendezvousHost: str,
-        rendezvousPort: int,
         topics: list[str] = None,
         handlePeriodicCheckin: bool = True,
         periodicCheckinSeconds: int = 60*60*1,
     ):
         super().__init__(
             rendezvousHost=rendezvousHost,
-            rendezvousPort=rendezvousPort,
             topics=topics,
             handlePeriodicCheckin=handlePeriodicCheckin,
             periodicCheckinSeconds=periodicCheckinSeconds)

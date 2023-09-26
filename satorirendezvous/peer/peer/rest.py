@@ -13,13 +13,12 @@ class Peer():
     def __init__(
         self,
         rendezvousHost: str,
-        rendezvousPort: int,
         topics: list[str] = None,
         handlePeriodicCheckin: bool = True,
         periodicCheckinSeconds: int = 60*60*1,
     ):
         self.createTopics(topics or [ToServerProtocol.fullyConnectedKeyword])
-        self.connect(rendezvousHost, rendezvousPort)
+        self.connect(rendezvousHost)
         if handlePeriodicCheckin:
             self.periodicCheckinSeconds = periodicCheckinSeconds
             self.periodicCheckin()
@@ -36,10 +35,9 @@ class Peer():
             time.sleep(self.periodicCheckinSeconds)
             self.rendezvous.checkin()
 
-    def connect(self, rendezvousHost: str, rendezvousPort: int):
+    def connect(self, rendezvousHost: str):
         self.rendezvous: RendezvousByRest = RendezvousByRest(
             host=rendezvousHost,
-            port=rendezvousPort,
             timed=True,
             onMessage=self.handleRendezvousMessage)
 
