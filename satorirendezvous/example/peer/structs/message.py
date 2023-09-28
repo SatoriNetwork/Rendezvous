@@ -38,16 +38,16 @@ class PeerMessage(BasePeerMessage):
         return self.raw.decode()
 
     @property
-    def isResponse(self):
-        return self.raw.startswith(PeerProtocol.respondPrefix)
+    def isResponse(self, subcmd: bytes = None):
+        return self.raw.startswith(PeerProtocol.respondPrefix + ((b'|' + subcmd) if subcmd is not None else b'|'))
 
     @property
-    def isRequest(self):
-        return self.raw.startswith(PeerProtocol.requestPrefix)
+    def isRequest(self, subcmd: bytes = None):
+        return self.raw.startswith(PeerProtocol.requestPrefix + ((b'|' + subcmd) if subcmd is not None else b'|'))
 
     @property
-    def isNoObservationResponse(self):
-        return self.raw == PeerProtocol.respondNoObservation()
+    def isNoneResponse(self, subcmd: bytes = None):
+        return self.raw.endswith(b'NONE|NONE') and self.isResponse(subcmd=subcmd)
 
 
 class PeerMessages(LockableList[PeerMessage]):

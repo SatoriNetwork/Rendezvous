@@ -29,7 +29,7 @@ class Channel():
                 peerIp=ip,
                 peerPort=port,
                 port=localPort,
-                onMessage=self.add))
+                onMessage=self.onMessage))
         self.connection.establish()
         if ping:
             self.setupPing()
@@ -49,17 +49,21 @@ class Channel():
 
     def isReady(self) -> bool:
         return len(self.receivedAfter(time=dt.datetime.now() - dt.timedelta(minutes=28))) > 0
-
-    def add(
+    
+    # override
+    def onMessage(
         self,
         message: bytes,
         sent: bool,
         time: dt.datetime = None,
         **kwargs,
     ):
+        self.add(message=PeerMessage(sent=sent, raw=message, time=time))
+        
+    # override
+    def add(self, message: PeerMessage):
         with self.messages:
-            self.messages.append(PeerMessage(
-                sent=sent, raw=message, time=time))
+            self.messages.append(message)
 
     def orderedMessages(self) -> list[PeerMessage]:
         ''' most recent last messages by PeerMessage.time '''
