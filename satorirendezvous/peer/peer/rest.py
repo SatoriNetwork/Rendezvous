@@ -27,7 +27,7 @@ class Peer():
         self.topics: Topics = Topics({k: Topic(k) for k in topics})
 
     def periodicCheckin(self):
-        self.checker = threading.Thread(target=self.checker, daemon=True)
+        self.checker = threading.Thread(target=self.checkin, daemon=True)
         self.checker.start()
 
     def checkin(self):

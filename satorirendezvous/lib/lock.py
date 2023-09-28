@@ -10,8 +10,10 @@ T = TypeVar('T')
 
 
 class LockableList(Generic[T], List[T]):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, limit: int = None, **kwargs):
         super().__init__(*args, **kwargs)
+        if limit is not None and isinstance(limit, int) and limit > 0:
+            self.limit = limit
         self.lock = threading.Lock()
         self.condition = threading.Condition(lock=self.lock)
 
@@ -32,6 +34,17 @@ class LockableList(Generic[T], List[T]):
         self.condition.notify_all()
         self.lock.release()
         return False
+
+    def safeAppend(self, item):
+        with self.lock:
+            self.append(item)
+
+    def append(self, item):
+        # with self.lock: #should be acquired by caller
+        if hasattr(self, 'limit') and len(self) >= self.limit:
+            self.pop(0)
+        super().append(item)
+
 
 # class Ints(LockableList[int]):
 #    '''

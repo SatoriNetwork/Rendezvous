@@ -1,8 +1,11 @@
+import time
 import socket
+import threading
 import datetime as dt
 from satorirendezvous.lib.lock import LockableList
 from satorirendezvous.peer.p2p.connect import Connection
 from satorirendezvous.peer.structs.message import PeerMessage, PeerMessages
+from satorirendezvous.peer.structs.protocol import PeerProtocol
 
 
 class Channel():
@@ -15,10 +18,11 @@ class Channel():
         port: int,
         localPort: int,
         topicSocket: socket.socket,
+        ping: bool = True,
     ):
         self.topic = topic
         self.messages: PeerMessages = (
-            self.messages if hasattr(self, 'messages') else PeerMessages([]))
+            self.messages if hasattr(self, 'messages') else PeerMessages([], limit=100))
         self.connection = (
             self.connection if hasattr(self, 'connection') else Connection(
                 topicSocket=topicSocket,
@@ -27,29 +31,44 @@ class Channel():
                 port=localPort,
                 onMessage=self.add))
         self.connection.establish()
+        if ping:
+            self.setupPing()
+
+    def setupPing(self):
+
+        def pingForever(interval=60*28):
+            while True:
+                time.sleep(interval)
+                self.send(cmd=PeerProtocol.pingPrefix)
+
+        self.pingThread = threading.Thread(target=pingForever)
+        self.pingThread.start()
 
     def send(self, cmd: str, msgs: list[str] = None):
         self.connection.send(cmd, msgs)
+
+    def isReady(self) -> bool:
+        return len(self.receivedAfter(time=dt.datetime.now() - dt.timedelta(minutes=28))) > 0
 
     def add(
         self,
         message: bytes,
         sent: bool,
         time: dt.datetime = None,
-        **kwargs
+        **kwargs,
     ):
         with self.messages:
             self.messages.append(PeerMessage(
                 sent=sent, raw=message, time=time))
 
-    def orderedMessages(self):
+    def orderedMessages(self) -> list[PeerMessage]:
         ''' most recent last messages by PeerMessage.time '''
         return sorted(self.messages, key=lambda msg: msg.time)
 
-    def messagesAfter(self, time: dt.datetime):
+    def messagesAfter(self, time: dt.datetime) -> list[PeerMessage]:
         return [msg for msg in self.messages if msg.time > time]
 
-    def receivedAfter(self, time: dt.datetime):
+    def receivedAfter(self, time: dt.datetime) -> list[PeerMessage]:
         return [
             msg for msg in self.messages
             if msg.time > time and not msg.sent]
