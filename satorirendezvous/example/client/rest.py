@@ -1,3 +1,4 @@
+from typing import Callable
 from satorirendezvous.client.rest import RendezvousByRest
 from satorirendezvous.client.structs.protocol import ToServerProtocol
 
@@ -11,7 +12,7 @@ class RendezvousByRestAuthenticated(RendezvousByRest):
         signed: str,
         host: str,
         timed: bool = True,
-        onMessage: function = None,
+        onMessage: Callable = None,
         *args,
         **kwargs,
     ):

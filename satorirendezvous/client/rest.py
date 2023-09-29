@@ -1,3 +1,4 @@
+from typing import Callable
 import requests
 from satorilib import logging
 from satorirendezvous.client.structs.message import FromServerMessage
@@ -11,7 +12,7 @@ class RendezvousByRest():
         self,
         host: str,
         timed: bool = True,
-        onMessage: function = None,
+        onMessage: Callable = None,
         *args,
         **kwargs,
     ):
