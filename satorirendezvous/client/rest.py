@@ -1,6 +1,7 @@
 from typing import Callable
 import requests
 from satorilib import logging
+from satorilib.utils import colored
 from satorirendezvous.client.structs.message import FromServerMessage
 from satorirendezvous.client.structs.protocol import ToServerProtocol
 
@@ -42,7 +43,9 @@ class RendezvousByRest():
         except Exception as e:
             logging.warning('err w/ payload', e, cmd, self.msgId, msgs)
         self.msgId += 1
+        logging.debug('Rendezvous payload: ', payload, print='teal')
         response = requests.post(self.rendezvousServer, data=payload)
+        logging.debug('Rendezvous response: ', response, print='blue')
         if response.status_code != 200 or not response.text.startswith('{"response": '):
             logging.warning('bad response', response, payload)
         for msg in response.json()['response']:

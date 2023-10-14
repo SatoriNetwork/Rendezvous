@@ -51,6 +51,7 @@ class Peer():
 
     def handleRendezvousMessage(self, msg: FromServerMessage):
         ''' receives all messages from the rendezvous server '''
+        logging.debug('Rendezvous FromServerMessage: ', msg, print='teal')
         if msg.isConnect():
             try:
                 topic = msg.payload.get('topic')
