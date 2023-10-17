@@ -56,7 +56,9 @@ class RendezvousByRest():
             if response.status_code != 200 or not response.text.startswith('{"response": '):
                 logging.warning('bad response', response, payload)
             logging.debug('good response', response)
+            logging.debug('response.json()', response.json())
             for msg in response.json()['response']:
+                logging.debug('good response msg:', msg)
                 message = FromServerMessage(msg)
                 self.inbox.append(message)
                 self.onMessage(message)
