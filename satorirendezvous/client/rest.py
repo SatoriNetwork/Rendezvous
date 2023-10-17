@@ -32,26 +32,38 @@ class RendezvousByRest():
 
     def send(self, cmd: str, msgs: list[str] = None):
         ''' compiles a payload including msgId, updates outbox, and sends '''
-        if not ToServerProtocol.isValidCommand(cmd):
-            logging.error('command not valid', cmd, print=True)
-            return
-        try:
-            payload = ToServerProtocol.compile([
-                x for x in [cmd, str(self.msgId), *(msgs or [])]
-                if isinstance(x, int) or (x is not None and len(x) > 0)])
+        def generatePayload():
+            if not ToServerProtocol.isValidCommand(cmd):
+                logging.error('command not valid', cmd, print=True)
+                return
+            try:
+                print('msgs', msgs)
+                print('type(msgs)', type(msgs))
+                payload = ToServerProtocol.compile(cmd, *[
+                    x for x in [str(self.msgId), *(msgs or [])]
+                    if isinstance(x, int) or (x is not None and len(x) > 0)])
+                return payload
+            except Exception as e:
+                logging.warning('err w/ payload', e, cmd, self.msgId, msgs)
+                return None
+
+        def sendPayload(payload: str = None):
+            self.msgId += 1
             self.outbox[self.msgId] = payload
-        except Exception as e:
-            logging.warning('err w/ payload', e, cmd, self.msgId, msgs)
-        self.msgId += 1
-        logging.debug('Rendezvous payload: ', payload, print='teal')
-        response = requests.post(self.rendezvousServer, data=payload)
-        logging.debug('Rendezvous response: ', response, print='blue')
-        if response.status_code != 200 or not response.text.startswith('{"response": '):
-            logging.warning('bad response', response, payload)
-        for msg in response.json()['response']:
-            message = FromServerMessage(msg)
-            self.inbox.append(message)
-            self.onMessage(message)
+            logging.debug('Rendezvous payload: ', payload, print='teal')
+            response = requests.post(self.rendezvousServer, data=payload)
+            logging.debug('Rendezvous response: ', response, print='blue')
+            if response.status_code != 200 or not response.text.startswith('{"response": '):
+                logging.warning('bad response', response, payload)
+            logging.debug('good response', response)
+            for msg in response.json()['response']:
+                message = FromServerMessage(msg)
+                self.inbox.append(message)
+                self.onMessage(message)
+
+        payload = generatePayload()
+        if payload is not None:
+            sendPayload(payload)
 
     def checkin(self):
         self.send(ToServerProtocol.checkinPrefix)

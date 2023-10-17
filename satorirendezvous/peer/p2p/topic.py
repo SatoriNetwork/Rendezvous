@@ -9,7 +9,7 @@ from satorirendezvous.peer.p2p.channel import Channel, Channels
 class Topic():
     ''' manages all our udp channels for a single topic '''
 
-    def __init__(self, name: str, port: int):
+    def __init__(self, name: str, port: int = None):
         self.name = name
         self.channels: Channels = (
             self.channels if hasattr(self, 'channels') else Channels([]))

@@ -31,4 +31,4 @@ class Protocol():
 
     @staticmethod
     def compile(cmd, *args: str) -> bytes:
-        return Protocol.toBytes('|'.join([Protocol.toStr(cmd), [Protocol.toStr(arg) for arg in args]]))
+        return Protocol.toBytes('|'.join([Protocol.toStr(cmd), *[Protocol.toStr(arg) for arg in args]]))
