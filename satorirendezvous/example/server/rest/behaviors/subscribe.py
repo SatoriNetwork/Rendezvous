@@ -4,6 +4,7 @@ from satorirendezvous.server.rest.behaviors.connect import ClientConnect
 from satorirendezvous.server.structs.client import RendezvousClient
 from satorirendezvous.example.server.structs.client import RendezvousClientsBySubscription
 from satorirendezvous.example.server.structs.message import ToServerSubscribeMessage
+from satorirendezvous.server.structs.protocol import ToClientProtocol
 
 
 class SubscribingClientConnect(ClientConnect):
@@ -36,8 +37,8 @@ class SubscribingClientConnect(ClientConnect):
     ):
         ''' route for subscription messages '''
         if msg.isSubscribe():
-            self._handleSubscribe(rendezvousClient)
-        self.postRouteMessage(msg, rendezvousClient)
+            return self._handleSubscribe(rendezvousClient)
+        return self.postRouteMessage(msg, rendezvousClient)
 
     def postRouteMessage(
         self,
@@ -45,12 +46,13 @@ class SubscribingClientConnect(ClientConnect):
         rendezvousClient: RendezvousClient,  # keep
     ):
         ''' post route hook '''
-        pass
+        return 'postRouteMessage not implemented'
 
     def preSubscriptionHook(self, rendezvousClient: RendezvousClient):
         ''' pre subscription hook '''
         rendezvousClient.seen()
 
+    # fix this - needs to return a list of peers to connect to.
     def _handleSubscribe(self, rendezvousClient: RendezvousClient):
         ''' SUBSCRIBE|msgId|signature|key '''
         logging.debug('_handleSubscribe')
@@ -92,12 +94,12 @@ class SubscribingClientConnect(ClientConnect):
             # moved to a thread. actually we should just move all this
             # to a stream and use rx like the node does, but we'll do
             # that later.
-            for peer in peers:
-                if peer != rendezvousClient:
-                    self._connectClientsTogether(
-                        topic=subscription,
-                        client=rendezvousClient,
-                        peer=peer)
+            return [self._connectClientsTogether(
+                topic=subscription,
+                client=rendezvousClient,
+                peer=peer)
+                for peer in peers
+                if peer != rendezvousClient]
         logging.debug('self.clientsBySubscription')
         logging.debug(self.clientsBySubscription)
 
@@ -108,12 +110,27 @@ class SubscribingClientConnect(ClientConnect):
         peer: RendezvousClient,
     ) -> str:
         ''' connects the two clients '''
-        self._notifyClientOfPeer(
+        return self._notifyClientOfPeer(
             topic=topic,
-            clientA=client,
-            clientB=peer)
-        if peer.lastSeen > time.time()-60*60*5:
-            self._notifyClientOfPeer(
-                topic=topic,
-                clientA=peer,
-                clientB=client)
+            client=client,
+            peer=peer)
+        # if peer.lastSeen > time.time()-60*60*5:
+        #    self._notifyClientOfPeer(
+        #        topic=topic,
+        #        clientA=peer,
+        #        clientB=client)
+
+    # fix this - needs to return a list of peers to connect to.
+    def _notifyClientOfPeer(
+        self,
+        topic: str,
+        client: RendezvousClient,
+        peer: RendezvousClient,
+    ):
+        '''
+        tells client the peer's address and port, the topic, and which port to
+        use for that topic.
+        '''
+        return ToClientProtocol.compile(
+            ToClientProtocol.connectPrefix,
+            topic, peer.ip, peer.portFor(topic), client.portFor(topic))

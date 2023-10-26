@@ -47,11 +47,6 @@ class ToServerMessage():
         self.signatureBytes = None
         self.keyBytes = None
         self.setSignatureKey()
-        self.command = ToServerProtocol.toStr(self.commandBytes)
-        self.msgId = ToServerProtocol.toStr(self.msgIdBytes)
-        self.message = ToServerProtocol.toStr(self.messageBytes)
-        self.signature = ToServerProtocol.toStr(self.signatureBytes)
-        self.key = ToServerProtocol.toStr(self.keyBytes)
 
     def __str__(self) -> str:
         return ('ToServerMessage('
@@ -64,16 +59,31 @@ class ToServerMessage():
                 f'messageBytes:{self.messageBytes},'
                 f'portsTaken:{self.portsTaken},'
                 f'signatureBytes:{self.signatureBytes},'
-                f'keyBytes:{self.keyBytes},'
-                f'command:{self.command},'
-                f'msgId:{self.msgId},'
-                f'message:{self.message},'
-                f'signature:{self.signature},'
-                f'key:{self.key})')
+                f'keyBytes:{self.keyBytes})')
 
     @property
-    def address(self):
+    def address(self) -> tuple[str, int]:
         return (self.ip, self.port)
+
+    @property
+    def command(self) -> str:
+        return ToServerProtocol.toStr(self.commandBytes)
+
+    @property
+    def msgId(self) -> str:
+        return ToServerProtocol.toStr(self.msgIdBytes)
+
+    @property
+    def message(self) -> str:
+        return ToServerProtocol.toStr(self.messageBytes)
+
+    @property
+    def signature(self) -> str:
+        return ToServerProtocol.toStr(self.signatureBytes)
+
+    @property
+    def key(self) -> str:
+        return ToServerProtocol.toStr(self.keyBytes)
 
     def setPortsTaken(self):
         if self.isPortsTaken():

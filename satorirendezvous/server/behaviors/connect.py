@@ -158,7 +158,7 @@ class ClientConnect():
         rendezvousClient.portsTaken = TwoWayDictionary.fromDict({
             **rendezvousClient.portsTaken,
             **rendezvousClient.msg.portsTaken})
-        self.respond(
+        return self.respond(
             address=rendezvousClient.msg.address,
             msgId=rendezvousClient.msg.msgId,
             msg='ports received')
@@ -168,7 +168,7 @@ class ClientConnect():
         # there is no real need to respond - we just send 3 per 5 minutes
         # anyway in case there is the occasional lost packet. however, the
         # client will skip 1 beat if it receives a beat from the server.
-        self.respond(
+        return self.respond(
             address=rendezvousClient.msg.address,
             msgId=rendezvousClient.msg.msgId,
             msg='beat')

@@ -57,12 +57,20 @@ class RendezvousByRest():
                 logging.warning('bad response', response, payload)
             else:
                 logging.debug('good response', response)
-            logging.debug('response.json()', response.json())
-            for msg in response.json()['response']:
-                logging.debug('good response msg:', msg)
-                message = FromServerMessage(msg)
-                self.inbox.append(message)
-                self.onMessage(message)
+            logging.debug('response.json()', response.json(), print='blue')
+            # response.json() {'response': "RendezvousClient(('97.117.28.178', 4431), 0)"}
+            # why is it giving this back?
+
+            # why do we expect multiple messages here?
+            # for msg in response.json()['response']:
+            #    logging.debug('good response msg:', msg)
+            #    message = FromServerMessage(msg)
+            #    self.inbox.append(message)
+            #    self.onMessage(message)
+            msg = response.json()['response']
+            message = FromServerMessage(msg)
+            self.inbox.append(message)
+            self.onMessage(message)
 
         payload = generatePayload()
         if payload is not None:
