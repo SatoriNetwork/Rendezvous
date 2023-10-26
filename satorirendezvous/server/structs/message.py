@@ -46,6 +46,7 @@ class ToServerMessage():
         self.setPortsTaken()
         self.signatureBytes = None
         self.keyBytes = None
+        self.setSignatureKey()
         self.command = ToServerProtocol.toStr(self.commandBytes)
         self.msgId = ToServerProtocol.toStr(self.msgIdBytes)
         self.message = ToServerProtocol.toStr(self.messageBytes)
@@ -81,6 +82,15 @@ class ToServerMessage():
                     json.loads(self.message))
             except Exception:
                 self.portsTaken = TwoWayDictionary()
+                self.malformed = True
+
+    def setSignatureKey(self):
+        if self.isCheckIn():
+            parts = self.messageBytes.split(b'|', 1)
+            try:
+                self.signatureBytes = parts[0]
+                self.keyBytes = parts[1]
+            except Exception:
                 self.malformed = True
 
     def isCheckIn(self, override: bytes = None):

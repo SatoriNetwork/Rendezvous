@@ -41,6 +41,19 @@ class ToServerProtocol(Protocol):
         return ToServerProtocol.portsPrefix + b'|' + ports
 
     @staticmethod
+    def checkin(msgId: str, signature: str, key: str) -> bytes:
+        ''' CHECKIN|msgId|signature|key'''
+        if isinstance(signature, str):
+            signature = signature.encode()
+        if isinstance(key, str):
+            key = key.encode()
+        if isinstance(msgId, int):
+            msgId = str(msgId)
+        if isinstance(msgId, str):
+            msgId = msgId.encode()
+        return ToServerProtocol.checkinPrefix + b'|' + msgId + b'|' + signature + b'|' + key
+
+    @staticmethod
     def prefixes():
         return [
             ToServerProtocol.checkinPrefix,
