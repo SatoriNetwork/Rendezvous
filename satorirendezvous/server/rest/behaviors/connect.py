@@ -61,7 +61,6 @@ class ClientConnect(BaseClientConnect):
         ''' routes all messages to the appropriate handler '''
         logging.info('starting rendezvous worker...')
         msg = ToServerMessage.fromBytes(data, *address)
-        logging.debug(msg, print='teal')
         if msg.isCheckIn():
             rendezvousClient = self.findClient(ip=msg.ip, port=msg.port)
             if rendezvousClient is None:

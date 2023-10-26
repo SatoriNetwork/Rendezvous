@@ -11,7 +11,8 @@ from waitress import serve
 import secrets
 import os
 from satorilib import logging
-from satorirendezvous.server.rest.behaviors import ClientConnect
+from satorirendezvous.example.server.rest.behaviors.subscribe import SubscribingClientConnect
+
 logging.setup(file='/tmp/server.log', stdoutAndFile=True)
 logging.info('starting satori website...')
 
@@ -28,7 +29,7 @@ connLock = threading.Lock()
 
 def getConn():
     if not hasattr(g, 'conn'):
-        g.conn = ClientConnect(fullyConnected=False)
+        g.conn = SubscribingClientConnect(fullyConnected=False)
     return g.conn
 
 

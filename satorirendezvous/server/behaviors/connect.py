@@ -112,7 +112,6 @@ class ClientConnect():
 
     def _authenticationHook(self, msg: ToServerMessage) -> bool:
         ''' authentication hook '''
-        logging.debug('auth hook!', print='teal')
         return True
 
     def _getKey(self, msg: ToServerMessage) -> str:
