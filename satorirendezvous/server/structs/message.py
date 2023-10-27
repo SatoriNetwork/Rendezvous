@@ -94,6 +94,7 @@ class ToServerMessage():
                 self.portsTaken = TwoWayDictionary()
                 self.malformed = True
 
+    # TODO FIX
     def setSignatureKey(self):
         if self.isCheckIn():
             parts = self.messageBytes.split(b'|', 1)
