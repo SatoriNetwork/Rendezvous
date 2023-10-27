@@ -44,9 +44,6 @@ class ToServerMessage():
         # broken out if present in message
         self.portsTaken = None
         self.setPortsTaken()
-        self.signatureBytes = None
-        self.keyBytes = None
-        self.setSignatureKey()
 
     def __str__(self) -> str:
         return ('ToServerMessage('
@@ -77,14 +74,6 @@ class ToServerMessage():
     def message(self) -> str:
         return ToServerProtocol.toStr(self.messageBytes)
 
-    @property
-    def signature(self) -> str:
-        return ToServerProtocol.toStr(self.signatureBytes)
-
-    @property
-    def key(self) -> str:
-        return ToServerProtocol.toStr(self.keyBytes)
-
     def setPortsTaken(self):
         if self.isPortsTaken():
             try:
@@ -92,16 +81,6 @@ class ToServerMessage():
                     json.loads(self.message))
             except Exception:
                 self.portsTaken = TwoWayDictionary()
-                self.malformed = True
-
-    # TODO FIX
-    def setSignatureKey(self):
-        if self.isCheckIn():
-            parts = self.messageBytes.split(b'|', 1)
-            try:
-                self.signatureBytes = parts[0]
-                self.keyBytes = parts[1]
-            except Exception:
                 self.malformed = True
 
     def isCheckIn(self, override: bytes = None):

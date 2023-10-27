@@ -1,3 +1,4 @@
+import json
 from satorirendezvous.example.client.structs.protocol import ToServerSubscribeProtocol
 from satorirendezvous.server.structs.message import ToServerMessage
 
@@ -15,24 +16,39 @@ class ToServerSubscribeMessage(ToServerMessage):
         message: bytes,
     ):
         super.__init__(sent, ip, port, command, msgId, message)
-        self.setSignatureAndKey()
+        self.subscriptionsBytes = None
+        self.publicationsBytes = None
+        self.setSubscriptionsAndPublications()
+
+    @property
+    def subscriptions(self) -> list[str]:
+        return json.loads(ToServerSubscribeProtocol.toStr(self.subscriptionsBytes))
+
+    @property
+    def publications(self) -> list[str]:
+        return json.loads(ToServerSubscribeProtocol.toStr(self.publicationsBytes))
+
+    def setSubscriptionsAndPublications(self):
+        ''' sig|key|subscriptions|publications '''
+        if self.isSubscribe() and self.messageBytes is not None:
+            parts = self.messageBytes.split(b'|', 3)
+            if len(parts) == 4:
+                self.signatureBytes = parts[2]
+                self.keyBytes = parts[3]
+            else:
+                self.malformed = True
+            if (
+                not isinstance(self.subscriptions, list) or
+                not isinstance(self.publications, list)
+            ):
+                self.malformed = True
 
     # override
+
     @staticmethod
     def isValidCommand(cmd: bytes) -> bool:
         return ToServerSubscribeProtocol.isValidCommand(
             cmd.encode() if isinstance(cmd, str) else cmd)
-
-    # override
-    def setSignatureAndKey(self):
-        if self.isCheckIn() or self.isSubscribe():
-            if self.messageBytes is not None:
-                parts = self.messageBytes.split(b'|', 1)
-                if len(parts) == 2:
-                    self.signatureBytes = parts[0]
-                    self.keyBytes = parts[1]
-                else:
-                    self.malformed = True
 
     def isSubscribe(self):
         return self.commandBytes == ToServerSubscribeProtocol.subscribePrefix
