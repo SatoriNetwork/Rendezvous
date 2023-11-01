@@ -13,7 +13,10 @@ class ToServerSubscribeProtocol(ToServerProtocol):
             signature = signature.encode()
         if isinstance(key, str):
             key = key.encode()
-        return ToServerSubscribeProtocol.subscribePrefix + b'|' + signature + b'|' + key
+        return (
+            ToServerSubscribeProtocol.subscribePrefix +
+            b'|' + signature +
+            b'|' + key)
 
     @staticmethod
     def prefixes():

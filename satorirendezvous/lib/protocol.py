@@ -30,5 +30,9 @@ class Protocol():
         return cmd in Protocol.prefixes()
 
     @staticmethod
-    def compile(cmd, *args: str) -> bytes:
-        return Protocol.toBytes('|'.join([Protocol.toStr(cmd), *[Protocol.toStr(arg) for arg in args]]))
+    def compile(cmd, *args) -> bytes:
+        return Protocol.toBytes(Protocol.compileStr(cmd, *args))
+
+    @staticmethod
+    def compileStr(cmd, *args) -> str:
+        return '|'.join([Protocol.toStr(cmd), *[Protocol.toStr(arg) for arg in args]])

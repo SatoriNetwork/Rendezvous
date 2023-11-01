@@ -1,3 +1,4 @@
+from typing import Union
 import random
 import time
 from satorilib.concepts import TwoWayDictionary
@@ -42,7 +43,7 @@ class RendezvousClient:
             return None
         return self.msgs[-1]
 
-    def portFor(self, streamId: str):
+    def portFor(self, streamId: str) -> Union[int, None]:
         return self.portsAssigned.get(streamId)
 
     def blacklistedPorts(self):

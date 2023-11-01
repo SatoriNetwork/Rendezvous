@@ -4,13 +4,13 @@ using threads for concurrency. However, in the event that we do want to use
 multiprocessing we can take advantage of these locking mechanisms.
 '''
 import threading
-from typing import TypeVar, Generic, List, Dict
+from typing import TypeVar, Generic, List, Dict, Union
 
 T = TypeVar('T')
 
 
 class LockableList(Generic[T], List[T]):
-    def __init__(self, *args, limit: int = None, **kwargs):
+    def __init__(self, *args, limit: Union[int, None] = None, **kwargs):
         super().__init__(*args, **kwargs)
         if limit is not None and isinstance(limit, int) and limit > 0:
             self.limit = limit
