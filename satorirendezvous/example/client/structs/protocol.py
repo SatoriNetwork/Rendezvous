@@ -25,3 +25,7 @@ class ToServerSubscribeProtocol(ToServerProtocol):
             ToServerSubscribeProtocol.portsPrefix,
             ToServerSubscribeProtocol.beatPrefix,
             ToServerSubscribeProtocol.subscribePrefix]
+
+    @staticmethod
+    def isValidCommand(cmd: bytes) -> bool:
+        return ToServerSubscribeProtocol.toBytes(cmd) in ToServerSubscribeProtocol.prefixes()
