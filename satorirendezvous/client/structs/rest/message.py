@@ -7,16 +7,6 @@ from satorirendezvous.server.structs.rest import ToClientRestProtocol as Protoco
 class FromServerMessage():
     ''' a strcuture describing a message from the server '''
 
-    @staticmethod
-    def fromJson(data: str):
-        logging.debug('fromStr---: ', data, print='teal')
-        try:
-            return FromServerMessage(**json.loads(data))
-        except Exception as e:
-            logging.error('FromServerMessage.fromJson error: ',
-                          e, data, print=True)
-            return FromServerMessage(raw=data)
-
     def __init__(
         self,
         command: Union[str, None] = None,
@@ -29,17 +19,23 @@ class FromServerMessage():
         self.messages = messages
         self.raw = raw
 
-    @property
-    def commandBytes(self):
-        return Protocol.toBytes(self.command)
+    @staticmethod
+    def fromJson(data: str):
+        logging.debug('fromStr---: ', data, print='teal')
+        try:
+            return FromServerMessage(**json.loads(data))
+        except Exception as e:
+            logging.error('FromServerMessage.fromJson error: ',
+                          e, data, print=True)
+            return FromServerMessage(raw=data)
 
     @property
-    def isResponse(self):
-        return self.commandBytes == Protocol.responsePrefix
+    def isResponse(self) -> bool:
+        return self.command == Protocol.responseCommand
 
     @property
-    def isConnect(self):
-        return self.commandBytes == Protocol.connectPrefix
+    def isConnect(self) -> bool:
+        return self.command == Protocol.connectCommand
 
     @property
     def asJsonStr(self) -> str:
