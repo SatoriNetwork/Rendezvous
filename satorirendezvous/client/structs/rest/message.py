@@ -11,13 +11,21 @@ class FromServerMessage():
         self,
         command: Union[str, None] = None,
         msgId: Union[int, None] = None,
-        messages: Union[list[str], None] = None,
+        messages: Union[list, None] = None,
         raw: Union[str, None] = None,
     ):
         self.command = command
         self.msgId = msgId
         self.messages = messages
         self.raw = raw
+
+    @staticmethod
+    def none(msgId: int = -1):
+        return FromServerMessage(
+            command=Protocol.responseCommand,
+            msgId=msgId,
+            messages=[],
+            raw=None)
 
     @staticmethod
     def fromJson(data: str):
@@ -36,6 +44,10 @@ class FromServerMessage():
     @property
     def isConnect(self) -> bool:
         return self.command == Protocol.connectCommand
+
+    @property
+    def asResponse(self) -> str:
+        return json.dumps({'response': self.asJson})
 
     @property
     def asJsonStr(self) -> str:
