@@ -47,7 +47,6 @@ class FromServerMessage():
             'command': self.command,
             'msgId': self.msgId,
             'messages': self.messages,
-            'payload': self.payload,
             'raw': self.raw}
 
     def __str__(self):
@@ -56,5 +55,4 @@ class FromServerMessage():
             f'\tcommand={self.command},\n'
             f'\tmsgId={self.msgId},\n'
             f'\tmessages={self.messages},\n'
-            f'\tpayload={self.payload},\n'
             f'\traw={self.raw})')
