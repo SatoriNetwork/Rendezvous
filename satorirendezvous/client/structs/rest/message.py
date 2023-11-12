@@ -30,12 +30,15 @@ class FromServerMessage():
     @staticmethod
     def fromJson(data: str):
         logging.debug('fromStr---: ', data, print='teal')
-        try:
-            return FromServerMessage(**json.loads(data))
-        except Exception as e:
-            logging.error('FromServerMessage.fromJson error: ',
-                          e, data, print=True)
-            return FromServerMessage(raw=data)
+        if isinstance(data, dict):
+            return FromServerMessage(**data)
+        if isinstance(data, str):
+            try:
+                return FromServerMessage(**json.loads(data))
+            except Exception as e:
+                logging.error('FromServerMessage.fromJson error: ',
+                            e, data, print=True)
+                return FromServerMessage(raw=data)
 
     @property
     def isResponse(self) -> bool:
