@@ -1,6 +1,7 @@
 import time
 import socket
 import threading
+from satorilib import logging
 from satorilib.api.time import now
 from satorirendezvous.lib.lock import LockableDict
 from satorirendezvous.peer.p2p.channel import Channel, Channels
@@ -13,8 +14,7 @@ class Topic():
         self.name = name
         self.channels: Channels = (
             self.channels if hasattr(self, 'channels') else Channels([]))
-        if port is not None:
-            self.setPort(port)
+        self.setPort(port)
         self.periodicPurge()
 
     def periodicPurge(self):
@@ -32,9 +32,11 @@ class Topic():
 
     def setPort(self, port: int):
         self.port = port
+        logging.debug('port is now set', print='magenta')
         self.setSocket()
 
     def setSocket(self):
+        logging.debug('punching hole', self.port, print='magenta')
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('0.0.0.0', self.port))
 
