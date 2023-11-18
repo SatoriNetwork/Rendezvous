@@ -39,11 +39,11 @@ class PeerMessage(BasePeerMessage):
     def interpret(self):
         try:
             parts = self.messageAsString.split('|')
-            if self.isRequest:
+            if self.isRequest():
                 self.prefix = parts[0]
                 self.subCommand = parts[1]
                 self.observationTime = parts[2]
-            elif self.isResponse:
+            elif self.isResponse():
                 self.prefix = parts[0]
                 self.subCommand = parts[1]
                 self.observationTime = parts[2]
