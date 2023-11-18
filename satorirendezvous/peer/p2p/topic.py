@@ -14,7 +14,8 @@ class Topic():
         self.name = name
         self.channels: Channels = (
             self.channels if hasattr(self, 'channels') else Channels([]))
-        self.setPort(port)
+        if port is not None:
+            self.setPort(port)
         self.periodicPurge()
 
     def periodicPurge(self):
