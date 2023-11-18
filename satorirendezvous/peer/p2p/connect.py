@@ -37,11 +37,15 @@ class Connection:
     def establish(self):
 
         def punchAHole():
+            logging.debug('---actaully punching a hole---',
+                          self.peerIp, self.peerPort, print='magenta')
             self.topicSocket.sendto(b'0', (self.peerIp, self.peerPort))
 
         def listen():
             while True:
                 data, addr = self.sock.recvfrom(1024)
+                logging.debug('---channel message recieved---',
+                              data, addr, print='magenta')
                 self.onMessage(data, sent=False, time=now(), addr=addr)
 
         logging.info('establishing connection', print='magenta')

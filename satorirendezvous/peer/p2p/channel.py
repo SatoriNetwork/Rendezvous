@@ -36,7 +36,7 @@ class Channel():
 
     def setupPing(self):
 
-        def pingForever(interval=60*28):
+        def pingForever(interval=28):
             while True:
                 time.sleep(interval)
                 self.send(cmd=PeerProtocol.pingPrefix)
@@ -49,7 +49,7 @@ class Channel():
 
     def isReady(self) -> bool:
         return len(self.receivedAfter(time=dt.datetime.now() - dt.timedelta(minutes=28))) > 0
-    
+
     # override
     def onMessage(
         self,
@@ -59,7 +59,7 @@ class Channel():
         **kwargs,
     ):
         self.add(message=PeerMessage(sent=sent, raw=message, time=time))
-        
+
     # override
     def add(self, message: PeerMessage):
         with self.messages:
