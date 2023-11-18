@@ -97,15 +97,12 @@ class PeerMessage(BasePeerMessage):
     def messageAsString(self) -> str:
         return self.raw.decode()
 
-    @property
     def isResponse(self, subcmd: bytes = None) -> bool:
         return PeerMessage._isResponse(self.raw, subcmd=subcmd)
 
-    @property
     def isRequest(self, subcmd: bytes = None) -> bool:
         return PeerMessage.isRequest(self.raw, subcmd=subcmd)
 
-    @property
     def isNoneResponse(self, subcmd: bytes = None) -> bool:
         return PeerMessage._isNoneResponse(self.raw, subcmd=subcmd)
 
