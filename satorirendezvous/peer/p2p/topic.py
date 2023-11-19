@@ -33,11 +33,9 @@ class Topic():
 
     def setPort(self, port: int):
         self.port = port
-        logging.debug('port is now set', print='magenta')
         self.setSocket()
 
     def setSocket(self):
-        logging.debug('punching hole', self.port, print='magenta')
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('0.0.0.0', self.port))
 
