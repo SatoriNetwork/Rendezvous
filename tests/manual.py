@@ -7,6 +7,8 @@ import threading
 
 def run(remoteIp='97.117.28.178', remotePort=50002, localPort=50001):
 
+    localPort = int(localPort)
+    remotePort = int(remotePort)
     print('\ngot peer')
     print('  ip:          {}'.format(remoteIp))
     print('  localPort: {}'.format(localPort))
