@@ -16,20 +16,20 @@ def run(remoteIp='97.117.28.178', remotePort=50002, localPort=50001):
 
     # punch hole
     # equiv: echo 'punch hole' | nc -u -p 20001 x.x.x.x 50002
-    print('punching hole')
 
+    print('setting up socket')
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('0.0.0.0', localPort))
-    sock.sendto(b'0', (remoteIp, remotePort))
 
-    print('ready to exchange messages\n')
+    print('punching hole')
+    sock.sendto(b'0', (remoteIp, remotePort))
 
     # listen for
     # equiv: nc -u -l 20001
 
     def listen():
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind(('0.0.0.0', localPort))
+        # sock.bind(('0.0.0.0', localPort))
         while True:
             data = sock.recv(1024)
             print('\rpeer: {}\n> '.format(data.decode()), end='')
@@ -39,6 +39,7 @@ def run(remoteIp='97.117.28.178', remotePort=50002, localPort=50001):
 
     # send messages
     # equiv: echo 'xxx' | nc -u -p 50002 x.x.x.x 20001
+    print('ready to exchange messages\n')
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('0.0.0.0', remotePort))
 
