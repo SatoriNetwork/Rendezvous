@@ -28,7 +28,7 @@ def run(remoteIp='97.117.28.178', remotePort=50002, localPort=50001):
     # equiv: nc -u -l 20001
 
     def listen():
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # sock.bind(('0.0.0.0', localPort))
         while True:
             data = sock.recv(1024)
