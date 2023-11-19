@@ -1,7 +1,7 @@
 import sys
 import socket
 import threading
-# 146.70.134.122
+# 138.199.6.207
 # 65.130.251.139
 
 
@@ -27,14 +27,14 @@ def run(remoteIp='97.117.28.178', remotePort=50002, localPort=50001):
     # listen for
     # equiv: nc -u -l 20001
 
-    def listen():
+    def listen(sock):
         # sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # sock.bind(('0.0.0.0', localPort))
         while True:
             data = sock.recv(1024)
             print('\rpeer: {}\n> '.format(data.decode()), end='')
 
-    listener = threading.Thread(target=listen, daemon=True)
+    listener = threading.Thread(target=listen, args=[sock], daemon=True)
     listener.start()
 
     # send messages
