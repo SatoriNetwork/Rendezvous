@@ -48,13 +48,13 @@ class Connection:
                               data, addr, print='magenta')
                 self.onMessage(data, sent=False, time=now(), addr=addr)
 
-        logging.info('establishing connection', print='magenta')
+        logging.debug('establishing connection', print='magenta')
         punchAHole()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('0.0.0.0', self.peerPort))
         listener = threading.Thread(target=listen, daemon=True)
         listener.start()
-        logging.info('ready to exchange messages\n', print='magenta')
+        logging.debug('ready to exchange messages\n', print='magenta')
         # todo:  add a heart beat ping if needed
 
     def makePayload(self, cmd: str, msgs: list[str] = None) -> Union[bytes, None]:
@@ -73,5 +73,6 @@ class Connection:
         if payload is None:
             return False
         self.sock.sendto(payload, (self.peerIp, self.port))
+        logging.debug('sent pyaload:', payload, print='magenta')
         self.onMessage(msgs, sent=True, time=now())
         return True

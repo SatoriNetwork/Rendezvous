@@ -2,6 +2,7 @@ import time
 import socket
 import threading
 import datetime as dt
+from satorilib import logging
 from satorirendezvous.lib.lock import LockableList
 from satorirendezvous.peer.p2p.connect import Connection
 from satorirendezvous.peer.structs.message import PeerMessage, PeerMessages
