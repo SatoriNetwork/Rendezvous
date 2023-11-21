@@ -38,13 +38,13 @@ def run(remoteIp='97.117.28.178', remotePort=50002, localPort=50001):
     # send messages
     # equiv: echo 'xxx' | nc -u -p 50002 x.x.x.x 20001
     print('ready to exchange messages\n')
-    sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock2.bind(('0.0.0.0', remotePort))
+    # sock2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # sock2.bind(('0.0.0.0', remotePort))
 
     while True:
         msg = input('> ')
-        sock2.sendto(msg.encode(), (remoteIp, localPort))
-        # sock.sendto(msg.encode(), (remoteIp, remotePort))
+        # sock2.sendto(msg.encode(), (remoteIp, localPort))
+        sock.sendto(msg.encode(), (remoteIp, remotePort))
 
 
 if __name__ == '__main__' and len(sys.argv) > 3:
