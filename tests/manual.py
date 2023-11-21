@@ -43,7 +43,7 @@ def run(remoteIp='97.117.28.178', remotePort=50002, localPort=50001):
 
     while True:
         msg = input('> ')
-        sock.sendto(msg.encode(), (remoteIp, remotePort))
+        sock.sendto(msg.encode(), (remoteIp, localPort))
 
 
 if __name__ == '__main__' and len(sys.argv) > 3:
