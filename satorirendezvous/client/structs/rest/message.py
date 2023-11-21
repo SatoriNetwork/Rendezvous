@@ -37,7 +37,7 @@ class FromServerMessage():
                 return FromServerMessage(**json.loads(data))
             except Exception as e:
                 logging.error('FromServerMessage.fromJson error: ',
-                            e, data, print=True)
+                              e, data, print=True)
                 return FromServerMessage(raw=data)
 
     @property
