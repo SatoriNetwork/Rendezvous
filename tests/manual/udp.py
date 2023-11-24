@@ -13,7 +13,7 @@ import threading
 
 def listen(sock: socket.socket):
     while True:
-        data, addr = sock.recvfrom(sock, 1024)
+        data, addr = sock.recvfrom(1024)
         # data = sock.recv(1024)
         print(f'\rpeer ({addr}): {data.decode()}\n> ', end='')
 
