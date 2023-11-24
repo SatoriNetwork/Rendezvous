@@ -8,6 +8,10 @@
 # docker run --rm -it --privileged -p 5002:5002/udp -p 5003:5003/udp -v .:/udp python:slim bash
 # python /udp/udp.py 45.83.220.218 5003 5002 True
 
+# docker run --rm -it --privileged --net=host -v .:/udp python:slim bash
+# apt-get update; apt-get install curl -y
+# curl https://satorinet.io/ip/
+
 import sys
 import socket
 import threading
