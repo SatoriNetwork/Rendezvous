@@ -11,10 +11,11 @@ import socket
 import threading
 
 
-def listen(sock):
+def listen(sock: socket.socket):
     while True:
-        data = sock.recv(1024)
-        print('\rpeer: {}\n> '.format(data.decode()), end='')
+        data, addr = sock.recvfrom(sock, 1024)
+        # data = sock.recv(1024)
+        print(f'\rpeer ({addr}): {data.decode()}\n> ', end='')
 
 
 def run(remoteIp, remotePort=5002, localPort=5001, myLocalIsTheirRemote=False):
