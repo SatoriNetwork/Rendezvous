@@ -5,6 +5,8 @@
 #       python3 udp.py <other ip address> 5003 5002 True
 #   at the same time.
 # now they can talk to each other directly.
+# docker run --rm -it --privileged -p 5002:5002/udp -p 5003:5003/udp -v .:/udp python:slim bash
+# python /udp/udp.py 45.83.220.218 5003 5002 True
 
 import sys
 import socket
