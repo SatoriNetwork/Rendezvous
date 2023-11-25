@@ -35,9 +35,9 @@ class SimpleUDP():
         while True:
             # data = sock.recv(1024)
             data, addr = self.sock.recvfrom(1024)
-            if addr[1] != remotePort:
-                remotePort = int(addr[1])
-                print(f'\rremote port: {remotePort}\n', end='')
+            if addr[1] != self.remotePort:
+                self.remotePort = int(addr[1])
+                print(f'\rremote port: {self.remotePort}\n', end='')
             print(f'\rpeer ({addr}): {data.decode()}\n> ', end='')
 
     def run(self):
