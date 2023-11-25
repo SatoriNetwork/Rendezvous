@@ -42,7 +42,7 @@ class SimpleUDP():
 
     def run(self):
         print('\ngot peer')
-        print(f'  remoteip:   {self.remoteIp}')
+        print(f'  remoteIp:   {self.remoteIp}')
         print(f'  repotePort: {self.remotePort}')
         print(f'  localPort:  {self.localPort}')
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -74,3 +74,11 @@ if __name__ == '__main__' and len(sys.argv) > 4:
     )
 else:
     print('usage: python3 manual.py <remoteIp> <remotePort> <localPort> <myLocalIsTheirRemote>')
+
+
+# after extensive testing the only seemingly robust solution is to punch the
+# hole and communicate outside of docker. worked fine when the dockers were on
+# linux machines, but on windows it was sometimes impossible to communicate.
+# then considering things like vpns, it was even more difficult. And docker
+# containers on windows can't communicate with each other at all. So. we'll
+# simply run the udp connections outside of docker.
