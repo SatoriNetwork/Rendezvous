@@ -29,6 +29,7 @@ class SimpleUDP():
         self.sock: socket.socket
         self.sock2: socket.socket
         self.run()
+        self.send()
 
     def listen(self):
         while True:
