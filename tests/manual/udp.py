@@ -15,6 +15,7 @@
 # apt-get update; apt-get install curl -y; curl https://satorinet.io/ip/
 
 import sys
+import time
 import socket
 import threading
 
@@ -26,19 +27,29 @@ class SimpleUDP():
         self.originalRemotePort = int(remotePort)
         self.localPort = int(localPort)
         self.myLocalIsTheirRemote = myLocalIsTheirRemote
+        self.message = ''
         self.sock: socket.socket
         self.sock2: socket.socket
         self.run()
         self.send()
 
     def listen(self):
-        while True:
-            # data = sock.recv(1024)
-            data, addr = self.sock.recvfrom(1024)
-            if addr[1] != self.remotePort:
-                self.remotePort = int(addr[1])
-                print(f'\rremote port: {self.remotePort}\n', end='')
-            print(f'\rpeer ({addr}): {data.decode()}\n> ', end='')
+        self.sock.settimeout(5)
+        while self.message != 'exit':
+            try:
+                data, addr = self.sock.recvfrom(1024)
+                if addr[1] != self.remotePort:
+                    self.remotePort = int(addr[1])
+                    print(
+                        f'\rremote port: {self.remotePort}, addr: {addr}\n', end='')
+                    self.fire(f'{self.remotePort}')
+                print(f'\rpeer ({addr}): {data.decode()}\n> ', end='')
+            except socket.timeout:
+                continue
+            except Exception as e:
+                print(e)
+                break
+        self.sock.close()
 
     def run(self):
         print('\ngot peer')
@@ -56,13 +67,20 @@ class SimpleUDP():
 
     def send(self):
         while True:
-            msg = input('> ')
-            if not self.myLocalIsTheirRemote:
-                self.sock2.sendto(
-                    msg.encode(), (self.remoteIp, self.localPort))
-            else:
-                self.sock.sendto(
-                    msg.encode(), (self.remoteIp, self.remotePort))
+            self.message = input('> ')
+            self.fire(self.message)
+            if self.message == 'exit':
+                print('exiting, please wait')
+                time.sleep(6)
+                break
+
+    def fire(self, msg: str):
+        if not self.myLocalIsTheirRemote:
+            self.sock2.sendto(
+                msg.encode(), (self.remoteIp, self.localPort))
+        else:
+            self.sock.sendto(
+                msg.encode(), (self.remoteIp, self.remotePort))
 
 
 if __name__ == '__main__' and len(sys.argv) > 4:
