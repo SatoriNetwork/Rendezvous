@@ -15,13 +15,18 @@ from satorirendezvous.lib.protocol import Protocol
 
 class PeerProtocol(Protocol):
 
+    pingPrefix: bytes = b'PING'
     requestPrefix: bytes = b'REQUEST'
     respondPrefix: bytes = b'RESPOND'
     observationSub: bytes = b'observation'
     countSub: bytes = b'count'
 
     @staticmethod
-    def request(time: dt.datetime, subcmd: bytes = None) -> bytes:
+    def ping() -> bytes:
+        return PeerProtocol.pingPrefix
+
+    @staticmethod
+    def request(time: dt.datetime, subcmd: bytes = None, msgId: int = -1) -> bytes:
         if isinstance(time, dt.datetime):
             time = datetimeToString(time)
         if isinstance(time, str):
@@ -30,10 +35,14 @@ class PeerProtocol(Protocol):
             subcmd = PeerProtocol.observationSub
         if isinstance(subcmd, str):
             subcmd = subcmd.encode()
-        return PeerProtocol.requestPrefix + b'|' + subcmd + b'|' + time
+        if isinstance(msgId, int):
+            msgId = str(msgId)
+        if isinstance(msgId, str):
+            msgId = msgId.encode()
+        return PeerProtocol.requestPrefix + b'|' + subcmd + b'|' + msgId + b'|' + time
 
     @staticmethod
-    def respond(time: dt.datetime, data: str, subcmd: bytes = None) -> bytes:
+    def respond(time: dt.datetime, data: str, subcmd: bytes = None, msgId: int = -1) -> bytes:
         if isinstance(data, float):
             data = str(data)
         if isinstance(data, int):
@@ -48,7 +57,11 @@ class PeerProtocol(Protocol):
             subcmd = PeerProtocol.observationSub
         if isinstance(subcmd, str):
             subcmd = subcmd.encode()
-        return PeerProtocol.respondPrefix + b'|' + subcmd + b'|' + time + b'|' + data
+        if isinstance(msgId, int):
+            msgId = str(msgId)
+        if isinstance(msgId, str):
+            msgId = msgId.encode()
+        return PeerProtocol.respondPrefix + b'|' + subcmd + b'|' + msgId + b'|' + time + b'|' + data
 
     @staticmethod
     def respondNone(subcmd: bytes = None) -> bytes:
