@@ -8,7 +8,7 @@ a response with the observation. if there is no observation, NONE is returned:
 
 '''
 import datetime as dt
-from satorilib.api.time import datetimeToString, datetimeFromString, now
+from satorilib.api.time import datetimeToString
 
 from satorirendezvous.lib.protocol import Protocol
 
@@ -18,6 +18,7 @@ class PeerProtocol(Protocol):
     pingPrefix: bytes = b'PING'
     requestPrefix: bytes = b'REQUEST'
     respondPrefix: bytes = b'RESPOND'
+    observationBeforeSub: bytes = b'ob4'
     observationSub: bytes = b'observation'
     countSub: bytes = b'count'
 
