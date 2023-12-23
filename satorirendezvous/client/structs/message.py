@@ -44,8 +44,6 @@ class FromServerMessage():
 
     @staticmethod
     def fromStr(data: str):
-        logging.debug('fromStr---: ', data, print='teal')
-
         try:
             parts = data.split(b'|')
             command = parts[0]

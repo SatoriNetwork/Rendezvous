@@ -1,5 +1,6 @@
 from typing import Union
 import datetime as dt
+from satorilib import logging
 from satorilib.api.time import now
 from satorirendezvous.lib.lock import LockableList
 from satorirendezvous.peer.structs.message import PeerMessage as BasePeerMessage
@@ -49,7 +50,7 @@ class PeerMessage(BasePeerMessage):
                 self.observationTime = parts[2]
                 self.data = parts[3]
         except Exception as e:
-            print(e)
+            logging.error(e, print=True)
 
     @staticmethod
     def parse(raw: Union[str, bytes], sent: bool, time: dt.datetime = None) -> 'PeerMessage':
@@ -75,7 +76,7 @@ class PeerMessage(BasePeerMessage):
                     observationTime=parts[2],
                     data=parts[3])
         except Exception as e:
-            print(e)
+            logging.error(e, print=True)
 
     @staticmethod
     def _asString(raw: bytes) -> str:

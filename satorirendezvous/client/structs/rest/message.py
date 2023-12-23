@@ -29,7 +29,6 @@ class FromServerMessage():
 
     @staticmethod
     def fromJson(data: str):
-        logging.debug('fromStr---: ', data, print='teal')
         if isinstance(data, dict):
             return FromServerMessage(**data)
         if isinstance(data, str):
