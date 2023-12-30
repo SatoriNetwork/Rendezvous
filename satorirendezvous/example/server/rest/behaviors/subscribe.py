@@ -55,9 +55,6 @@ class SubscribingClientConnect(ClientConnect):
     # fix this - needs to return a list of peers to connect to.
     def _handleSubscribe(self, rendezvousClient: RendezvousClient):
         ''' SUBSCRIBE|msgId|signature|key '''
-        logging.debug('_handleSubscribe')
-        logging.debug('rendezvousClient.msg', rendezvousClient.msg)
-        logging.debug('rendezvousClient.msg.key', rendezvousClient.msg.key)
         key = self._getKey(rendezvousClient.msg)
 
         # this subscriptions should be a list of strings, I think it
@@ -100,8 +97,6 @@ class SubscribingClientConnect(ClientConnect):
                 peer=peer)
                 for peer in peers
                 if peer != rendezvousClient]
-        logging.debug('self.clientsBySubscription')
-        logging.debug(self.clientsBySubscription)
 
     def _connectClientsTogether(
         self,

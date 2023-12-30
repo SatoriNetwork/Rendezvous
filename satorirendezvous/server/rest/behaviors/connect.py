@@ -91,24 +91,16 @@ class ClientConnect(BaseClientConnect):
         ''' routes all messages to the appropriate handler '''
         msg = ToServerMessage.fromBytes(data, *address)
         if msg.isCheckIn():
-            logging.debug('msg.isCheckIn()', print=True)
             rendezvousClient = self.findClient(ip=msg.ip, port=msg.port)
-            logging.debug('found?', rendezvousClient, print=True)
             resonse = None
             if rendezvousClient is None:
-                logging.debug('resonse?', resonse, print=True)
                 resonse, rendezvousClient = self._handleCheckIn(msg)
-                logging.debug('resonse?', resonse, print=True)
             else:
-                logging.debug('adding msg', msg, print=True)
                 rendezvousClient.addMsg(msg)
             if self.fullyConnected:
-                logging.debug('fully connected', print=True)
                 return self._handleConnectToAll(rendezvousClient)
             else:
                 # that's not part of the protocol
-                logging.debug('responsing', resonse or str(
-                    rendezvousClient), print=True)
                 return resonse or str(rendezvousClient)
         else:
             rendezvousClient = self.findClient(ip=msg.ip, port=msg.port)

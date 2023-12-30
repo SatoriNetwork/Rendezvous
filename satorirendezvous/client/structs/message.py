@@ -11,7 +11,6 @@ class FromServerMessage():
 
     @staticmethod
     def fromBytes(data: bytes):
-        logging.debug('fromBytes---: ', data, print='teal')
         try:
             parts = data.split(b'|')
             command = parts[0]

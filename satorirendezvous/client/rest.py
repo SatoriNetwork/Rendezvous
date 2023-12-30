@@ -48,14 +48,9 @@ class RendezvousByRest():
         def sendPayload(payload: str = None):
             self.msgId += 1
             self.outbox[self.msgId] = payload
-            logging.debug('Rendezvous payload: ', payload, print='teal')
             response = requests.post(self.rendezvousServer, data=payload)
-            logging.debug('Rendezvous response: ', response, print='blue')
             if response.status_code != 200 or not response.text.startswith('{"response": '):
                 logging.warning('bad response', response, payload)
-            else:
-                logging.debug('good response', response)
-            logging.debug('response.json()', response.json(), print='blue')
             # response.json() {'response': "RendezvousClient(('97.117.28.178', 4431), 0)"}
             # why is it giving this back?
 

@@ -51,18 +51,12 @@ class Peer():
 
     def handleRendezvousMessage(self, msg: FromServerMessage):
         ''' receives all messages from the rendezvous server '''
-        logging.debug('Rendezvous FromServerMessage: ', msg, print='teal')
         if msg.isConnect:
-            logging.debug('isConnect', print='teal')
             try:
                 topic = msg.payload.get('topic')
-                logging.debug('topic', topic, print='teal')
                 ip = msg.payload.get('peerIp')
-                logging.debug('ip', ip, print='teal')
                 port = int(msg.payload.get('peerPort'))
-                logging.debug('port', port, print='teal')
                 localPort = int(msg.payload.get('clientPort'))
-                logging.debug('localPort', localPort, print='teal')
                 if topic is not None and ip is not None:
                     with self.topics:
                         if topic in self.topics.keys():

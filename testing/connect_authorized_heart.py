@@ -150,7 +150,6 @@ class ConnectAuthorizedHeartBehavior():
             return None
 
     def respond(self, address: tuple[str, int], msgId: str, msg: str):
-        logging.debug('responding to:', address, f'{msgId}|{msg}')
         self.sock.sendto(f'{msgId}|{msg}'.encode(), address)
 
     def connectTwoClients(

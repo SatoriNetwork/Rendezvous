@@ -24,5 +24,4 @@ class RendezvousServer:
     def runForever(self):
         while True:
             data, address = self.sock.recvfrom(1028)
-            logging.debug('received: ', data, address)
             self.queue.put((data, address))
