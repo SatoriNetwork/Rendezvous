@@ -8,7 +8,7 @@ a response with the observation. if there is no observation, NONE is returned:
 
 '''
 import datetime as dt
-from satorilib.api.time import datetimeToString
+from satorilib.api.time import datetimeToTimestamp
 
 from satorirendezvous.lib.protocol import Protocol
 
@@ -29,7 +29,7 @@ class PeerProtocol(Protocol):
     @staticmethod
     def request(time: dt.datetime, subcmd: bytes = None, msgId: int = -1) -> bytes:
         if isinstance(time, dt.datetime):
-            time = datetimeToString(time)
+            time = datetimeToTimestamp(time)
         if isinstance(time, str):
             time = time.encode()
         if subcmd is None:
@@ -51,7 +51,7 @@ class PeerProtocol(Protocol):
         if isinstance(data, str):
             data = data.encode()
         if isinstance(time, dt.datetime):
-            time = datetimeToString(time)
+            time = datetimeToTimestamp(time)
         if isinstance(time, str):
             time = time.encode()
         if subcmd is None:
